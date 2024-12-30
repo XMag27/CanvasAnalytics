@@ -171,10 +171,20 @@ public class CoursesController : ControllerBase
             var submissions = await _canvasApiService.GetSubmissionsAsync(courseId, taskId);
 
             // Contar entregados y no entregados
+            var submittedCount = submissions.Count(s => s.WorkflowState != "unsubmitted");
+            var notSubmittedCount = submissions.Count(s => s.WorkflowState == "unsubmitted");
+
+            // Calcular porcentaje
+            double completionPercentage = submissions.Any()
+                ? (double)submittedCount / submissions.Count * 100
+                : 0.0;
+
+            // Resumen
             var summary = new
             {
-                Submitted = submissions.Count(s => s.WorkflowState != "unsubmitted"), // Todos excepto "unsubmitted"
-                NotSubmitted = submissions.Count(s => s.WorkflowState == "unsubmitted") // Solo "unsubmitted"
+                Submitted = submittedCount,
+                NotSubmitted = notSubmittedCount,
+                CompletionPercentage = completionPercentage // Porcentaje de entregas cumplidas
             };
 
             Console.WriteLine($"Resumen de entregas generado: {JsonConvert.SerializeObject(summary)}");
@@ -190,6 +200,7 @@ public class CoursesController : ControllerBase
             });
         }
     }
+
 
     [HttpGet("{courseId}/assignments/{assignmentId}/analytics")]
     public async Task<IActionResult> GetAssignmentAnalytics(int courseId, int assignmentId)
@@ -264,6 +275,7 @@ public class CoursesController : ControllerBase
             return StatusCode(500, new { error = "Error al enviar el mensaje", details = ex.Message });
         }
     }
+
 
 
 
