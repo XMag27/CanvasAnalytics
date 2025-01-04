@@ -35,7 +35,7 @@ namespace CanvasAnalytics.Services
         public async Task<List<Course>> GetCoursesAsync()
         {
             // Crea una solicitud personalizada
-            var request = new HttpRequestMessage(HttpMethod.Get, "courses?enrollment_state=active");
+            var request = new HttpRequestMessage(HttpMethod.Get, "accounts/1/courses");
 
             // Configura los encabezados
             request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", _token);
@@ -158,7 +158,32 @@ namespace CanvasAnalytics.Services
             return response.IsSuccessStatusCode;
         }
 
+        public async Task<List<Course>> GetStudentCoursesAsync(int studentId)
+        {
+            var response = await _httpClient.GetAsync($"users/{studentId}/courses");
+            response.EnsureSuccessStatusCode();
 
+            var jsonResponse = await response.Content.ReadAsStringAsync();
+            return JsonConvert.DeserializeObject<List<Course>>(jsonResponse);
+        }
+
+        public async Task<List<Assignment>> GetCourseAssignmentsAsync(int courseId)
+        {
+            var response = await _httpClient.GetAsync($"courses/{courseId}/assignments");
+            response.EnsureSuccessStatusCode();
+
+            var jsonResponse = await response.Content.ReadAsStringAsync();
+            return JsonConvert.DeserializeObject<List<Assignment>>(jsonResponse);
+        }
+        public async Task<double> GetAssignmentCompletionPercentageAsync(int courseId, int assignmentId)
+        {
+            var submissions = await GetSubmissionsAsync(courseId, assignmentId);
+
+            if (!submissions.Any()) return 0.0;
+
+            var completed = submissions.Count(s => s.WorkflowState != "unsubmitted");
+            return (double)completed / submissions.Count * 100;
+        }
 
 
     }

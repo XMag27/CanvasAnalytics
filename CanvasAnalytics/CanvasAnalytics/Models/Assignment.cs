@@ -12,5 +12,9 @@ namespace CanvasAnalytics.Models
 
         [JsonProperty("points_possible")]
         public double PointsPossible { get; set; }
+        
+        [JsonProperty("workflow_state")]
+        public string WorkflowState { get; set; }
+
     }
 }

@@ -276,8 +276,5 @@ public class CoursesController : ControllerBase
         }
     }
 
-
-
-
 }
 
