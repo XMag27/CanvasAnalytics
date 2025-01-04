@@ -35,3 +35,9 @@ C:\Users\xensi\source\repos\CanvasAnalytics\CanvasAnalytics\obj\Debug\net8.0\Can
 C:\Users\xensi\source\repos\CanvasAnalytics\CanvasAnalytics\obj\Debug\net8.0\CanvasAnalytics.genruntimeconfig.cache
 C:\Users\xensi\source\repos\CanvasAnalytics\CanvasAnalytics\obj\Debug\net8.0\ref\CanvasAnalytics.dll
 C:\Users\xensi\source\repos\CanvasAnalytics\CanvasAnalytics\bin\Debug\net8.0\Newtonsoft.Json.dll
+C:\Users\xensi\source\repos\CanvasAnalytics\CanvasAnalytics\bin\Debug\net8.0\publish\web.config
+C:\Users\xensi\source\repos\CanvasAnalytics\CanvasAnalytics\bin\Debug\net8.0\publish\appsettings.Development.json
+C:\Users\xensi\source\repos\CanvasAnalytics\CanvasAnalytics\bin\Debug\net8.0\publish\appsettings.json
+C:\Users\xensi\source\repos\CanvasAnalytics\CanvasAnalytics\bin\Debug\net8.0\publish\CanvasAnalytics.deps.json
+C:\Users\xensi\source\repos\CanvasAnalytics\CanvasAnalytics\bin\Debug\net8.0\publish\CanvasAnalytics.runtimeconfig.json
+C:\Users\xensi\source\repos\CanvasAnalytics\CanvasAnalytics\bin\Debug\net8.0\publish\CanvasAnalytics.staticwebassets.endpoints.json

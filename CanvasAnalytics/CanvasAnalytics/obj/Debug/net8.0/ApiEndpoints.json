@@ -48,6 +48,22 @@
   },
   {
     "ContainingType": "CoursesController",
+    "Method": "GetAssignmentAverages",
+    "RelativePath": "api/Courses/{courseId}/assignments/averages",
+    "HttpMethod": "GET",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "courseId",
+        "Type": "System.Int32",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "CoursesController",
     "Method": "GetStudents",
     "RelativePath": "api/Courses/{courseId}/students",
     "HttpMethod": "GET",
@@ -56,6 +72,27 @@
     "Parameters": [
       {
         "Name": "courseId",
+        "Type": "System.Int32",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "CoursesController",
+    "Method": "GetStudentGrades",
+    "RelativePath": "api/Courses/{courseId}/students/{studentId}/grades",
+    "HttpMethod": "GET",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "courseId",
+        "Type": "System.Int32",
+        "IsRequired": true
+      },
+      {
+        "Name": "studentId",
         "Type": "System.Int32",
         "IsRequired": true
       }

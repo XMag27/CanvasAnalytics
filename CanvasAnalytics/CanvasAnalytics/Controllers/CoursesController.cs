@@ -275,6 +275,113 @@ public class CoursesController : ControllerBase
             return StatusCode(500, new { error = "Error al enviar el mensaje", details = ex.Message });
         }
     }
+    [HttpGet("{courseId}/assignments/averages")]
+    public async Task<IActionResult> GetAssignmentAverages(int courseId)
+    {
+        try
+        {
+            Console.WriteLine($"Iniciando cálculo de promedios para el curso {courseId}");
+
+            // Obtener las actividades del curso
+            var assignments = await _canvasApiService.GetCourseAssignmentsAsync(courseId);
+            Console.WriteLine($"Número de actividades obtenidas: {assignments.Count}");
+
+            var averages = new List<object>();
+
+            foreach (var assignment in assignments)
+            {
+                Console.WriteLine($"Procesando actividad: {assignment.Name} (ID: {assignment.Id})");
+
+                // Obtener las entregas de la actividad
+                var submissions = await _canvasApiService.GetSubmissionsAsync(courseId, assignment.Id);
+                Console.WriteLine($"Número de entregas obtenidas para la actividad {assignment.Id}: {submissions.Count}");
+
+                // Filtrar entregas con puntuación válida
+                var validSubmissions = submissions.Where(s => s.Score.HasValue).ToList();
+
+                if (validSubmissions.Any())
+                {
+                    // Calcular el promedio total
+                    var totalAverage = validSubmissions.Average(s => s.Score.Value);
+                    Console.WriteLine($"Promedio total para la actividad {assignment.Id}: {totalAverage}");
+
+                    // Calcular el promedio ponderado
+                    var weightedAverage = totalAverage / assignment.PointsPossible * 100;
+                    Console.WriteLine($"Promedio ponderado para la actividad {assignment.Id}: {weightedAverage}");
+
+                    averages.Add(new
+                    {
+                        AssignmentId = assignment.Id,
+                        AssignmentName = assignment.Name,
+                        TotalAverage = totalAverage,
+                        WeightedAverage = weightedAverage
+                    });
+                }
+                else
+                {
+                    Console.WriteLine($"No hay entregas válidas para la actividad {assignment.Id}. Asignando promedios en 0.");
+
+                    averages.Add(new
+                    {
+                        AssignmentId = assignment.Id,
+                        AssignmentName = assignment.Name,
+                        TotalAverage = 0.0,
+                        WeightedAverage = 0.0
+                    });
+                }
+            }
+
+            Console.WriteLine($"Promedios calculados exitosamente para el curso {courseId}");
+            return Ok(averages);
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error al obtener los promedios de las actividades: {ex.Message}");
+            return StatusCode(500, new { error = "Error al obtener los promedios", details = ex.Message });
+        }
+    }
+    [HttpGet("{courseId}/students/{studentId}/grades")]
+    public async Task<IActionResult> GetStudentGrades(int courseId, int studentId)
+    {
+        try
+        {
+            Console.WriteLine($"Obteniendo calificaciones para el estudiante {studentId} en el curso {courseId}");
+
+            // Obtener las actividades del curso
+            var assignments = await _canvasApiService.GetCourseAssignmentsAsync(courseId);
+
+            var grades = new List<object>();
+
+            foreach (var assignment in assignments)
+            {
+                // Obtener las entregas del estudiante para la actividad
+                var submissions = await _canvasApiService.GetSubmissionsAsync(courseId, assignment.Id);
+                var studentSubmission = submissions.FirstOrDefault(s => s.UserId == studentId);
+
+                // Si no entregó, asignar 0; si entregó, usar la calificación
+                var grade = studentSubmission != null && studentSubmission.Score.HasValue
+                    ? studentSubmission.Score.Value
+                    : 0.0;
+
+                grades.Add(new
+                {
+                    AssignmentId = assignment.Id,
+                    AssignmentName = assignment.Name,
+                    Grade = grade,
+                    MaxPoints = assignment.PointsPossible
+                });
+
+                Console.WriteLine($"Calificación para la actividad {assignment.Name}: {grade}");
+            }
+
+            return Ok(grades);
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error al obtener las calificaciones: {ex.Message}");
+            return StatusCode(500, new { error = "Error al obtener las calificaciones", details = ex.Message });
+        }
+    }
 
 }
 
