@@ -8,6 +8,7 @@
         public DateTime? DueDate { get; set; }
         public string WorkflowState { get; set; }
         public double CompletionPercentage { get; set; }
+        public bool IsSubmitted { get; set; }
     }
 
 }

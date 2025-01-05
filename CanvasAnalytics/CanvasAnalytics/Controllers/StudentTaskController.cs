@@ -36,6 +36,14 @@ public class StudentTasksController : ControllerBase
                 {
                     if (assignment.DueDate.HasValue && assignment.DueDate > DateTime.Now)
                     {
+                        // Obtener las entregas del estudiante para la tarea
+                        var submissions = await _canvasApiService.GetSubmissionsAsync(course.Id, assignment.Id);
+                        var studentSubmission = submissions.FirstOrDefault(s => s.UserId == studentId);
+
+                        // Determinar si la tarea ha sido entregada
+                        var isSubmitted = studentSubmission != null && studentSubmission.WorkflowState != "unsubmitted";
+
+                        // Calcular el porcentaje de completitud
                         var completionPercentage = await _canvasApiService.GetAssignmentCompletionPercentageAsync(course.Id, assignment.Id);
 
                         pendingTasks.Add(new PendingTask
@@ -45,8 +53,11 @@ public class StudentTasksController : ControllerBase
                             AssignmentName = assignment.Name,
                             DueDate = assignment.DueDate,
                             WorkflowState = assignment.WorkflowState,
-                            CompletionPercentage = completionPercentage
+                            CompletionPercentage = completionPercentage,
+                            IsSubmitted = isSubmitted // Nueva propiedad para indicar si fue entregada
                         });
+
+                        Console.WriteLine($"Tarea: {assignment.Name}, Entregada: {isSubmitted}");
                     }
                 }
             }
@@ -59,4 +70,5 @@ public class StudentTasksController : ControllerBase
             return StatusCode(500, new { error = "Error al obtener las tareas pendientes", details = ex.Message });
         }
     }
+
 }
