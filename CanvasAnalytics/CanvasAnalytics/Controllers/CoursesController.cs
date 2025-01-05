@@ -361,6 +361,10 @@ public class CoursesController : ControllerBase
             // Obtener las actividades del curso
             var assignments = await _canvasApiService.GetCourseAssignmentsAsync(courseId);
 
+            // Obtener los grupos de asignación del curso
+            var assignmentGroups = await _canvasApiService.GetAssignmentGroupsAsync(courseId);
+            Console.WriteLine($"Número de grupos de asignación obtenidos: {assignmentGroups.Count}");
+
             var grades = new List<object>();
 
             foreach (var assignment in assignments)
@@ -374,15 +378,26 @@ public class CoursesController : ControllerBase
                     ? studentSubmission.Score.Value
                     : 0.0;
 
+                // Calcular la calificación ponderada
+                var weightedGrade = assignment.PointsPossible > 0
+                    ? (grade / assignment.PointsPossible) * 100
+                    : 0.0;
+
+                // Obtener el nombre del grupo al que pertenece la actividad
+                var assignmentGroup = assignmentGroups.FirstOrDefault(g => g.Id == assignment.AssignmentGroupId);
+                var assignmentGroupName = assignmentGroup?.Name ?? "Sin grupo";
+
                 grades.Add(new
                 {
                     AssignmentId = assignment.Id,
                     AssignmentName = assignment.Name,
+                    AssignmentGroup = assignmentGroupName, // Nombre del grupo
                     Grade = grade,
-                    MaxPoints = assignment.PointsPossible
+                    MaxPoints = assignment.PointsPossible,
+                    WeightedGrade = weightedGrade // Calificación ponderada
                 });
 
-                Console.WriteLine($"Calificación para la actividad {assignment.Name}: {grade}");
+                Console.WriteLine($"Calificación para la actividad {assignment.Name} en el grupo {assignmentGroupName}: {grade}, Ponderada: {weightedGrade}");
             }
 
             return Ok(grades);
@@ -393,6 +408,8 @@ public class CoursesController : ControllerBase
             return StatusCode(500, new { error = "Error al obtener las calificaciones", details = ex.Message });
         }
     }
+
+
 
 }
 
