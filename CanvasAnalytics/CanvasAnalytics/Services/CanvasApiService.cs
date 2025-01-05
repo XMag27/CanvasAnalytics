@@ -185,6 +185,14 @@ namespace CanvasAnalytics.Services
             return (double)completed / submissions.Count * 100;
         }
 
+        public async Task<List<AssignmentGroup>> GetAssignmentGroupsAsync(int courseId)
+        {
+            var response = await _httpClient.GetAsync($"courses/{courseId}/assignment_groups");
+            response.EnsureSuccessStatusCode();
+
+            var jsonResponse = await response.Content.ReadAsStringAsync();
+            return JsonConvert.DeserializeObject<List<AssignmentGroup>>(jsonResponse);
+        }
 
     }
 }

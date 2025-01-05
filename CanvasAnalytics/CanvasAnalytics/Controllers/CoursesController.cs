@@ -286,6 +286,10 @@ public class CoursesController : ControllerBase
             var assignments = await _canvasApiService.GetCourseAssignmentsAsync(courseId);
             Console.WriteLine($"Número de actividades obtenidas: {assignments.Count}");
 
+            // Obtener los grupos de asignación del curso
+            var assignmentGroups = await _canvasApiService.GetAssignmentGroupsAsync(courseId);
+            Console.WriteLine($"Número de grupos de asignación obtenidos: {assignmentGroups.Count}");
+
             var averages = new List<object>();
 
             foreach (var assignment in assignments)
@@ -295,6 +299,10 @@ public class CoursesController : ControllerBase
                 // Obtener las entregas de la actividad
                 var submissions = await _canvasApiService.GetSubmissionsAsync(courseId, assignment.Id);
                 Console.WriteLine($"Número de entregas obtenidas para la actividad {assignment.Id}: {submissions.Count}");
+
+                // Obtener el nombre del grupo de asignación
+                var assignmentGroup = assignmentGroups.FirstOrDefault(g => g.Id == assignment.AssignmentGroupId);
+                var assignmentGroupName = assignmentGroup?.Name ?? "Sin grupo";
 
                 // Filtrar entregas con puntuación válida
                 var validSubmissions = submissions.Where(s => s.Score.HasValue).ToList();
@@ -313,6 +321,7 @@ public class CoursesController : ControllerBase
                     {
                         AssignmentId = assignment.Id,
                         AssignmentName = assignment.Name,
+                        AssignmentGroup = assignmentGroupName, // Añadir el nombre del grupo
                         TotalAverage = totalAverage,
                         WeightedAverage = weightedAverage
                     });
@@ -325,6 +334,7 @@ public class CoursesController : ControllerBase
                     {
                         AssignmentId = assignment.Id,
                         AssignmentName = assignment.Name,
+                        AssignmentGroup = assignmentGroupName, // Añadir el nombre del grupo
                         TotalAverage = 0.0,
                         WeightedAverage = 0.0
                     });
@@ -340,6 +350,7 @@ public class CoursesController : ControllerBase
             return StatusCode(500, new { error = "Error al obtener los promedios", details = ex.Message });
         }
     }
+
     [HttpGet("{courseId}/students/{studentId}/grades")]
     public async Task<IActionResult> GetStudentGrades(int courseId, int studentId)
     {

@@ -16,5 +16,7 @@ namespace CanvasAnalytics.Models
         [JsonProperty("workflow_state")]
         public string WorkflowState { get; set; }
 
+        [JsonProperty("assignment_group_id")]
+        public int AssignmentGroupId { get; set; }
     }
 }
