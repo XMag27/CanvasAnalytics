@@ -64,6 +64,22 @@
   },
   {
     "ContainingType": "CoursesController",
+    "Method": "GetAssignmentsGroupedByGroup",
+    "RelativePath": "api/Courses/{courseId}/assignments/grouped",
+    "HttpMethod": "GET",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "courseId",
+        "Type": "System.Int32",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "CoursesController",
     "Method": "GetStudents",
     "RelativePath": "api/Courses/{courseId}/students",
     "HttpMethod": "GET",

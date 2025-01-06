@@ -74,8 +74,27 @@ public class CoursesController : ControllerBase
     {
         try
         {
+            // Obtener las actividades del curso
             var assignments = await _canvasApiService.GetAssignmentsAsync(courseId);
-            return Ok(assignments);
+
+            // Obtener los grupos de asignación del curso
+            var assignmentGroups = await _canvasApiService.GetAssignmentGroupsAsync(courseId);
+
+            // Mapear cada actividad con el nombre del grupo de asignación
+            var assignmentsWithGroups = assignments.Select(assignment =>
+            {
+                var group = assignmentGroups.FirstOrDefault(g => g.Id == assignment.AssignmentGroupId);
+                return new
+                {
+                    assignment.Id,
+                    assignment.Name,
+                    assignment.DueDate,
+                    assignment.PointsPossible,
+                    AssignmentGroup = group?.Name ?? "Sin grupo"
+                };
+            });
+
+            return Ok(assignmentsWithGroups);
         }
         catch (HttpRequestException ex)
         {
@@ -94,6 +113,75 @@ public class CoursesController : ControllerBase
             });
         }
     }
+
+    [HttpGet("{courseId}/assignments/grouped")]
+    public async Task<IActionResult> GetAssignmentsGroupedByGroup(int courseId)
+    {
+        try
+        {
+            // Obtener los grupos de asignación del curso
+            var assignmentGroups = await _canvasApiService.GetAssignmentGroupsAsync(courseId);
+
+            // Obtener las tareas del curso
+            var assignments = await _canvasApiService.GetAssignmentsAsync(courseId);
+
+            // Crear la estructura agrupada
+            var groupedAssignments = assignmentGroups.Select(group => new
+            {
+                AssignmentGroupId = group.Id,
+                AssignmentGroupName = group.Name,
+                Assignments = assignments
+                    .Where(assignment => assignment.AssignmentGroupId == group.Id)
+                    .Select(assignment => new
+                    {
+                        assignment.Id,
+                        assignment.Name,
+                        assignment.DueDate,
+                        assignment.PointsPossible
+                    }).ToList()
+            }).ToList();
+
+            // Agregar un grupo "Sin grupo" si hay tareas sin asignar
+            var ungroupedAssignments = assignments
+                .Where(assignment => assignment.AssignmentGroupId == null || !assignmentGroups.Any(g => g.Id == assignment.AssignmentGroupId))
+                .Select(assignment => new
+                {
+                    assignment.Id,
+                    assignment.Name,
+                    assignment.DueDate,
+                    assignment.PointsPossible
+                }).ToList();
+
+            if (ungroupedAssignments.Any())
+            {
+                groupedAssignments.Add(new
+                {
+                    AssignmentGroupId = 0,
+                    AssignmentGroupName = "Sin grupo",
+                    Assignments = ungroupedAssignments
+                });
+            }
+
+            return Ok(groupedAssignments);
+        }
+        catch (HttpRequestException ex)
+        {
+            return StatusCode(500, new
+            {
+                error = "Error al conectar con la API de Canvas",
+                details = ex.Message
+            });
+        }
+        catch (Exception ex)
+        {
+            return StatusCode(500, new
+            {
+                error = "Ocurrió un error inesperado",
+                details = ex.Message
+            });
+        }
+    }
+
 
     [HttpGet("{courseId}/tasks/{taskId}/grades")]
     public async Task<IActionResult> GetGrades(int courseId, int taskId)
