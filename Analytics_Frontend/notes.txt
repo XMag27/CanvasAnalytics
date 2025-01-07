@@ -1,0 +1,10 @@
+JSX
+JS + HTML
+
+useState()
+
+useState(estadoInicial) return [estado, funcion actualizar estado]
+
+setIsOpen(true)
+
+isOpen = true
