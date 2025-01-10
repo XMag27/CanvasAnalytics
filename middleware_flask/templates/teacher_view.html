@@ -6,25 +6,45 @@
     <title>Teacher View</title>
     <style>
         body {
-            font-family: Arial, sans-serif;
+            font-family: Arial, Helvetica, sans-serif;
             margin: 0;
             padding: 0;
             background-color: #f8f9fa;
         }
         header {
-            background-color: #343a40;
-            color: #fff;
+            border-bottom: 1px solid #ddd;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
             padding: 1rem;
-            text-align: center;
+            text-align: left;
+            background: #fff;
+            display: flex;
+            flex-direction: row;
+            justify-content: space-evenly;
+            align-items: center;
+        }
+        header h3{
+            font-size: 40px;
+            margin: 0;
+            color: #333;
+            margin: 10px auto;
+        }
+        header h1{
+            font-size: 20px;
+            margin: 5px 0 10px;
+            color: #666;
+            margin: 10px auto;
+            font-weight: 200;
         }
         main {
             padding: 2rem;
+            background: #fff;
         }
         section {
             margin-bottom: 2rem;
         }
         h2 {
             font-size: 1.5rem;
+            color: #333;
             margin-bottom: 1rem;
         }
         ul {
@@ -40,6 +60,7 @@
             display: flex;
             justify-content: space-between;
             align-items: center;
+            color: #222;
         }
         .btn {
             background-color: #007bff;
@@ -56,13 +77,20 @@
 </head>
 <body>
     <header>
-        <h1>Información del curso {{ curso }}</h1>
+        <div class="titulo">
+            <h1>{{ curso }}</h1>
+        <h3>
+            Estadísticas del Curso
+        </h3>
+        </div>
+        <div class= "botonProgresoC">
+            <button class="btn" onclick="redirectToCourseDashboard({{ course_id }})">
+                Ver Progreso del Curso
+            </button>
+        </div>
     </header>
     <main>
         <div class="dashboard-btn">
-            <button class="btn" onclick="redirectToCourseDashboard({{ course_id }})">
-                Ver Dashboards Generales
-            </button>
         <section>
             <h2>Actividades</h2>
             <ul>
@@ -83,7 +111,7 @@
                 <li>
                     <span>{{ student.name }}</span>
                     <button class="btn" onclick="redirectToStudentDashboard({{ course_id }}, {{ student.id }})">
-                        Ver Dashboard
+                        Ver Historial
                     </button>
                 </li>
                 {% endfor %}
