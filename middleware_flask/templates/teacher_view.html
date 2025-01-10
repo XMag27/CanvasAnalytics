@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Teacher View</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f8f9fa;
+        }
+        header {
+            background-color: #343a40;
+            color: #fff;
+            padding: 1rem;
+            text-align: center;
+        }
+        main {
+            padding: 2rem;
+        }
+        section {
+            margin-bottom: 2rem;
+        }
+        h2 {
+            font-size: 1.5rem;
+            margin-bottom: 1rem;
+        }
+        ul {
+            list-style-type: none;
+            padding: 0;
+        }
+        li {
+            padding: 0.5rem;
+            margin-bottom: 0.5rem;
+            background-color: #fff;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .btn {
+            background-color: #007bff;
+            color: white;
+            padding: 0.5rem 1rem;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+        .btn:hover {
+            background-color: #0056b3;
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <h1>Información del curso {{ curso }}</h1>
+    </header>
+    <main>
+        <div class="dashboard-btn">
+            <button class="btn" onclick="redirectToCourseDashboard({{ course_id }})">
+                Ver Dashboards Generales
+            </button>
+        <section>
+            <h2>Actividades</h2>
+            <ul>
+                {% for assignment in assignments %}
+                <li>
+                    <span>{{ assignment.name }} ({{ assignment.assignmentGroup }})</span>
+                    <button class="btn" onclick="redirectToTaskDashboard({{ course_id }}, {{ assignment.id }})">
+                        Estadísticas
+                    </button>
+                </li>
+                {% endfor %}
+            </ul>
+        </section>
+        <section>
+            <h2>Estudiantes</h2>
+            <ul>
+                {% for student in students %}
+                <li>
+                    <span>{{ student.name }}</span>
+                    <button class="btn" onclick="redirectToStudentDashboard({{ course_id }}, {{ student.id }})">
+                        Ver Dashboard
+                    </button>
+                </li>
+                {% endfor %}
+            </ul>
+        </section>
+    </main>
+    <script>
+        // Función para redirigir al dashboard de tareas
+        function redirectToTaskDashboard(courseId, taskId) {
+            window.location.href = `/teacher/task-dashboard?course_id=${courseId}&task_id=${taskId}`;
+        }
+        function redirectToStudentDashboard(courseId, studentId) {
+        // Construye la URL con los parámetros course_id y student_id
+        const url = `/teacher/student-dashboard?course_id=${courseId}&student_id=${studentId}`;
+        window.location.href = url; // Redirige al dashboard del estudiante
+        }
+        function redirectToCourseDashboard(courseId) {
+            window.location.href = `/teacher/course-dashboard?course_id=${courseId}`;
+        }
+    </script>
+</body>
+</html>

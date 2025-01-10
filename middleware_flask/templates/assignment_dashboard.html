@@ -1,0 +1,349 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Task Dashboard</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f8f9fa;
+        }
+        header {
+            background-color: #343a40;
+            color: #fff;
+            padding: 1rem;
+            text-align: center;
+        }
+        main {
+            padding: 2rem;
+        }
+        .chart-container {
+            margin: 2rem 0;
+        }
+        canvas {
+            max-width: 100%;
+        }
+        .range-form {
+            margin-bottom: 1rem;
+            display: flex;
+            flex-wrap: wrap;
+            align-items: center;
+            gap: 1rem;
+        }
+        .range-form label {
+            margin-right: 0.5rem;
+        }
+        .range-form input {
+            width: 80px;
+            padding: 0.2rem;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+        }
+        .range-form button {
+            padding: 0.5rem 1rem;
+            background-color: #007bff;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+        .range-form button:hover {
+            background-color: #0056b3;
+        }
+        details {
+            margin-top: 1rem;
+        }
+        summary {
+            font-weight: bold;
+            cursor: pointer;
+        }
+        ul {
+            list-style-type: none;
+            padding: 0;
+            margin: 0;
+        }
+        li {
+            padding: 0.5rem;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            margin-bottom: 0.5rem;
+            background-color: #fff;
+        }
+    </style>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body>
+    <header>
+        <h1>Task Dashboard - Tarea {{ task_id }}</h1>
+    </header>
+    <main>
+        <div>
+            <label for="viewSelect">Selecciona una vista:</label>
+            <select id="viewSelect" onchange="handleViewChange()">
+                <option value="general">General</option>
+                <option value="submitted">Entregados</option>
+                <option value="notSubmitted">No Entregados</option>
+            </select>
+        </div>
+        <section id="charts" class="chart-container">
+            <h2 id="chartTitle">Gráfico de Línea: Entregas por Fecha</h2>
+            <canvas id="lineChart"></canvas>
+            <canvas id="barChart"></canvas>
+        </section>
+        <section id="rangeContainer" class="chart-container" style="display:none;">
+            <h2 id="chartRangeTitle">Cantidad de Estudiantes por Rangos</h2>
+            <div class="range-form">
+                <label for="lowRange">Calificación Baja:</label>
+                <input type="number" id="lowRange" min="0" max="100" value="0">
+                <label for="highRange">a</label>
+                <input type="number" id="highRange" min="0" max="100" value="59">
+                <label for="highLowRange">Calificación Alta:</label>
+                <input type="number" id="highLowRange" min="0" max="100" value="60">
+                <label for="upperRange">a</label>
+                <input type="number" id="upperRange" min="0" max="100" value="100">
+                <button onclick="updateRangeChartAndLists()">Aplicar</button>
+            </div>
+            <canvas id="rangeBarChart"></canvas>
+        </section>
+        <section id="studentLists" class="chart-container" style="display:none;">
+            <h2 id="studentListTitle">Estudiantes por Rangos de Calificación</h2>
+            <details>
+                <summary>Calificación Baja</summary>
+                <ul id="lowGradeStudents" style="list-style-type: none; padding: 0;"></ul>
+            </details>
+            <details>
+                <summary>Calificación Alta</summary>
+                <ul id="highGradeStudents" style="list-style-type: none; padding: 0;"></ul>
+            </details>
+        </section>
+        <section id="notSubmittedContainer" class="chart-container" style="display:none;">
+            <h2>No Entregados</h2>
+            <div class="not-submitted-section">
+                <div class="not-submitted-header">
+                    <label for="reminderPeriod">Período de Recordatorio:</label>
+                    <select id="reminderPeriod">
+                        <option value="daily">Diario</option>
+                        <option value="weekly">Semanal</option>
+                        <option value="custom">Personalizado</option>
+                    </select>
+                </div>
+                <div class="not-submitted-body">
+                    <form id="reminderForm" class="reminder-form">
+                        <label for="startDate">Fecha Inicio:</label>
+                        <input type="date" id="startDate" required>
+                        <label for="endDate">Fecha Fin:</label>
+                        <input type="date" id="endDate" required>
+                        <label for="reminderDay">Día:</label>
+                        <select id="reminderDay">
+                            <option value="mon">Lunes</option>
+                            <option value="tue">Martes</option>
+                            <option value="wed">Miércoles</option>
+                            <option value="thu">Jueves</option>
+                            <option value="fri">Viernes</option>
+                        </select>
+                        <label for="reminderTime">Hora:</label>
+                        <input type="time" id="reminderTime" required>
+                        <label for="customMessage">Mensaje:</label>
+                        <textarea id="customMessage" rows="4" cols="50" placeholder="Escribe un mensaje personalizado..."></textarea>
+                        <button type="submit" onclick="handleSaveReminder(event)">Guardar</button>
+                    </form>
+                </div>
+                <div class="not-submitted-students">
+                    <h3>Estudiantes No Entregados</h3>
+                    <ul id="notSubmittedStudents" style="list-style-type: none; padding: 0;">
+                        <!-- Estudiantes no entregados se renderizan aquí -->
+                    </ul>
+                </div>
+            </div>
+        </section>
+        
+    </main>
+    <script>
+        console.log("Datos de histogramData:", {{ histogram_data | tojson }});
+        console.log("Datos de submissionSummary:", {{ submission_summary | tojson }});
+        console.log("Datos de analyticsData:", {{ grades_data | tojson }});
+        console.log("Datos de tareas no entregadas", {{ not_submitted | tojson }});
+
+        const histogramData = {{ histogram_data | tojson }};
+        const submissionSummary = {{ submission_summary | tojson }};
+        const analyticsData = {{ grades_data | tojson }};
+        const NotSubmitted = {{ not_submitted | tojson }};
+        let lineChart, barChart, rangeBarChart;
+
+        const renderGeneralCharts = () => {
+            console.log("Renderizando gráficos generales...");
+            const lineCtx = document.getElementById('lineChart').getContext('2d');
+            if (lineChart) lineChart.destroy();
+            lineChart = new Chart(lineCtx, {
+                type: 'line',
+                data: {
+                    labels: histogramData.map(entry => entry.date),
+                    datasets: [{
+                        label: 'Entregas por Fecha',
+                        data: histogramData.map(entry => entry.count),
+                        fill: false,
+                        borderColor: 'rgba(75, 192, 192, 1)',
+                        tension: 0.1
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            max: submissionSummary.total
+                        }
+                    }
+                }
+            });
+
+            const barCtx = document.getElementById('barChart').getContext('2d');
+            if (barChart) barChart.destroy();
+            barChart = new Chart(barCtx, {
+                type: 'bar',
+                data: {
+                    labels: ['Entregados', 'No Entregados'],
+                    datasets: [{
+                        label: 'Resumen de Entregas',
+                        data: [submissionSummary.submitted, submissionSummary.notSubmitted],
+                        backgroundColor: ['rgba(75, 192, 192, 0.2)', 'rgba(255, 99, 132, 0.2)'],
+                        borderColor: ['rgba(75, 192, 192, 1)', 'rgba(255, 99, 132, 1)'],
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            max: submissionSummary.total
+                        }
+                    }
+                }
+            });
+        };
+
+        const updateRangeChartAndLists = () => {
+            const lowRange = parseFloat(document.getElementById('lowRange').value);
+            const highRange = parseFloat(document.getElementById('highRange').value);
+            const highLowRange = parseFloat(document.getElementById('highLowRange').value);
+            const upperRange = parseFloat(document.getElementById('upperRange').value);
+
+            console.log("Actualizando gráficos y listas con rangos:", { lowRange, highRange, highLowRange, upperRange });
+
+            // Filtrar los datos de acuerdo a los rangos ingresados
+            const lowGradeStudents = analyticsData.filter(student => student.weightedScore >= lowRange && student.weightedScore <= highRange);
+            const highGradeStudents = analyticsData.filter(student => student.weightedScore >= highLowRange && student.weightedScore <= upperRange);
+
+            // Actualizar gráfico de barras
+            const rangeBarCtx = document.getElementById('rangeBarChart').getContext('2d');
+            if (rangeBarChart) rangeBarChart.destroy();
+            rangeBarChart = new Chart(rangeBarCtx, {
+                type: 'bar',
+                data: {
+                    labels: ['Calificación Baja', 'Calificación Alta'],
+                    datasets: [{
+                        label: 'Cantidad de Estudiantes',
+                        data: [lowGradeStudents.length, highGradeStudents.length],
+                        backgroundColor: ['rgba(153, 102, 255, 0.2)', 'rgba(255, 159, 64, 0.2)'],
+                        borderColor: ['rgba(153, 102, 255, 1)', 'rgba(255, 159, 64, 1)'],
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            max: analyticsData.length
+                        }
+                    }
+                }
+            });
+
+            // Actualizar listas de estudiantes
+            const lowGradeList = document.getElementById('lowGradeStudents');
+            const highGradeList = document.getElementById('highGradeStudents');
+
+            lowGradeList.innerHTML = '';
+            lowGradeStudents.forEach(student => {
+                const listItem = document.createElement('li');
+                listItem.textContent = `${student.userName} - Calificación: ${student.weightedScore.toFixed(2)}`;
+                lowGradeList.appendChild(listItem);
+            });
+
+            highGradeList.innerHTML = '';
+            highGradeStudents.forEach(student => {
+                const listItem = document.createElement('li');
+                listItem.textContent = `${student.userName} - Calificación: ${student.weightedScore.toFixed(2)}`;
+                highGradeList.appendChild(listItem);
+            });
+
+            console.log("Listas actualizadas:", { lowGradeStudents, highGradeStudents });
+        };
+
+        const handleViewChange = () => {
+            const selectedView = document.getElementById('viewSelect').value;
+            const chartContainer = document.getElementById('charts');
+            const rangeContainer = document.getElementById('rangeContainer');
+            const studentLists = document.getElementById('studentLists');
+            const notSubmittedContainer = document.getElementById('notSubmittedContainer');
+            
+            chartContainer.style.display = selectedView === "general" ? "block" : "none";
+            rangeContainer.style.display = selectedView === "submitted" ? "block" : "none";
+            studentLists.style.display = selectedView === "submitted" ? "block" : "none";
+            notSubmittedContainer.style.display = selectedView === "notSubmitted" ? "block" : "none";
+
+            if (selectedView === "general") {
+                renderGeneralCharts();
+            } else if (selectedView === "submitted") {
+                updateRangeChartAndLists();
+            } else if (selectedView === "notSubmitted") {
+                renderNotSubmittedStudents();
+            }
+        };
+        function renderNotSubmittedStudents() {
+            console.log("Renderizando estudiantes no entregados...");
+            console.log("Datos de estudiantes no entregados:", NotSubmitted);
+
+            // Obtener el elemento donde se mostrará la lista
+            const notSubmittedList = document.getElementById('notSubmittedStudents');
+            notSubmittedList.innerHTML = ''; // Limpiar lista anterior
+
+            // Recorrer los datos de NotSubmitted y llenar la lista
+            NotSubmitted.forEach(student => {
+                const listItem = document.createElement('li');
+                listItem.textContent = `${student.name} - ID: ${student.id}`;
+                notSubmittedList.appendChild(listItem);
+            });
+
+            console.log("Estudiantes no entregados renderizados:", NotSubmitted);
+        }
+        function handleSaveReminder(event) {
+            event.preventDefault(); // Evitar recargar la página
+
+            const startDate = document.getElementById('startDate').value;
+            const endDate = document.getElementById('endDate').value;
+            const reminderDay = document.getElementById('reminderDay').value;
+            const reminderTime = document.getElementById('reminderTime').value;
+            const customMessage = document.getElementById('customMessage').value;
+
+            console.log("Guardando recordatorio:", {
+                startDate,
+                endDate,
+                reminderDay,
+                reminderTime,
+                customMessage,
+            });
+
+            // Aquí puedes enviar estos datos al backend usando fetch o Axios
+            alert('Recordatorio guardado correctamente.');
+}
+        window.onload = renderGeneralCharts;
+
+    </script>
+</body>
+</html>

@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Teacher Dashboard</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+            padding: 0;
+        }
+        .container {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 20px;
+        }
+        .chart-container {
+            flex: 1;
+            min-width: 300px;
+        }
+        canvas {
+            max-width: 100%;
+            height: auto;
+        }
+    </style>
+</head>
+<body>
+    <h1>Teacher Dashboard</h1>
+    <div class="container" id="dashboard-container">
+        <!-- Charts will be rendered here -->
+    </div>
+    <script>
+        async function fetchDashboardData(courseId) {
+            try {
+                const response = await fetch(`/teacher/dashboard?course_id=${courseId}`);
+                return await response.json();
+            } catch (error) {
+                console.error("Error fetching dashboard data:", error);
+                alert("No se pudo cargar el dashboard.");
+            }
+        }
+
+        async function renderDashboard(courseId) {
+            const dashboardData = await fetchDashboardData(courseId);
+
+            if (dashboardData.error) {
+                alert(dashboardData.error);
+                return;
+            }
+
+            const container = document.getElementById("dashboard-container");
+
+            dashboardData.forEach((assignment) => {
+                // Create a container for each assignment
+                const assignmentContainer = document.createElement("div");
+                assignmentContainer.className = "chart-container";
+
+                // Create the title
+                const title = document.createElement("h2");
+                title.textContent = assignment.assignmentName;
+                assignmentContainer.appendChild(title);
+
+                // Create Submission Summary Chart
+                const summaryCanvas = document.createElement("canvas");
+                assignmentContainer.appendChild(summaryCanvas);
+
+                const summaryData = {
+                    labels: ["Entregadas", "No Entregadas"],
+                    datasets: [{
+                        label: "Resumen de Entregas",
+                        data: [
+                            assignment.submissionSummary.submitted,
+                            assignment.submissionSummary.notSubmitted
+                        ],
+                        backgroundColor: ["#4CAF50", "#F44336"]
+                    }]
+                };
+
+                new Chart(summaryCanvas, {
+                    type: "pie",
+                    data: summaryData
+                });
+
+                // Create Histogram Chart
+                const histogramCanvas = document.createElement("canvas");
+                assignmentContainer.appendChild(histogramCanvas);
+
+                const histogramData = {
+                    labels: assignment.histogramData.map(h => h.date),
+                    datasets: [{
+                        label: "Entregas por Fecha",
+                        data: assignment.histogramData.map(h => h.count),
+                        backgroundColor: "#2196F3"
+                    }]
+                };
+
+                new Chart(histogramCanvas, {
+                    type: "bar",
+                    data: histogramData,
+                    options: {
+                        responsive: true,
+                        scales: {
+                            y: {
+                                beginAtZero: true
+                            }
+                        }
+                    }
+                });
+
+                // Append assignment container to the dashboard
+                container.appendChild(assignmentContainer);
+            });
+        }
+
+        // Replace with the actual course_id
+        const courseId = 2; 
+        renderDashboard(courseId);
+    </script>
+</body>
+</html>

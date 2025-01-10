@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Course Dashboard</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f8f9fa;
+        }
+        header {
+            background-color: #343a40;
+            color: #fff;
+            padding: 1rem;
+            text-align: center;
+        }
+        main {
+            padding: 2rem;
+        }
+        .chart-container {
+            margin: 2rem 0;
+        }
+        canvas {
+            max-width: 100%;
+        }
+        .activity-list {
+            margin-top: 2rem;
+        }
+        details {
+            margin-bottom: 1rem;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            background-color: #fff;
+            padding: 1rem;
+        }
+        summary {
+            font-weight: bold;
+            cursor: pointer;
+            margin-bottom: 0.5rem;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        th, td {
+            border: 1px solid #ddd;
+            padding: 0.5rem;
+            text-align: center;
+        }
+        th {
+            background-color: #f4f4f4;
+        }
+    </style>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body>
+    <header>
+        <h1>Dashboard del Curso {{ course_id }}</h1>
+    </header>
+    <main>
+        <div>
+            <h2>Promedios Ponderados por Actividad</h2>
+            <canvas id="courseAveragesChart"></canvas>
+        </div>
+        <div class="activity-list">
+            <h2>Actividades por Grupo</h2>
+            <div id="activityGroups">
+                <!-- Grupos de actividades se llenarán aquí -->
+            </div>
+        </div>
+    </main>
+    <script>
+        // Datos pasados desde Flask
+        const averagesData = {{ averages_data | tojson }};
+        console.log("Datos de promedios ponderados:", averagesData);
+
+        // Crear gráfico de promedios ponderados
+        const renderAveragesChart = () => {
+            const ctx = document.getElementById('courseAveragesChart').getContext('2d');
+            const labels = averagesData.map(item => item.assignmentName);
+            const data = averagesData.map(item => item.weightedAverage);
+
+            new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        label: 'Promedio Ponderado',
+                        data: data,
+                        backgroundColor: 'rgba(54, 162, 235, 0.2)',
+                        borderColor: 'rgba(54, 162, 235, 1)',
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            max: 100
+                        }
+                    }
+                }
+            });
+        };
+
+        // Agrupar actividades por categoría
+        const groupActivitiesByCategory = (activities) => {
+            const grouped = {};
+            activities.forEach(activity => {
+                const group = activity.assignmentGroup || "Sin Categoría";
+                if (!grouped[group]) {
+                    grouped[group] = [];
+                }
+                grouped[group].push(activity);
+            });
+            return grouped;
+        };
+
+        // Renderizar actividades agrupadas
+        const renderActivityGroups = () => {
+            const activityGroups = groupActivitiesByCategory(averagesData);
+            const activityGroupsContainer = document.getElementById('activityGroups');
+
+            Object.keys(activityGroups).forEach(group => {
+                const details = document.createElement('details');
+                const summary = document.createElement('summary');
+                summary.textContent = `${group} (Promedio Ponderado: ${
+                    (
+                        activityGroups[group].reduce((sum, activity) => sum + activity.weightedAverage, 0) /
+                        activityGroups[group].length
+                    ).toFixed(2)}%)`;
+
+                const table = document.createElement('table');
+                table.innerHTML = `
+                    <thead>
+                        <tr>
+                            <th>Nombre de la Actividad</th>
+                            <th>Puntos Máximos</th>
+                            <th>Promedio Ponderado (%)</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        ${activityGroups[group].map(activity => `
+                            <tr>
+                                <td>${activity.assignmentName}</td>
+                                <td>${activity.pointsPossible}</td>
+                                <td>${activity.weightedAverage.toFixed(2)}</td>
+                            </tr>
+                        `).join('')}
+                    </tbody>
+                `;
+
+                details.appendChild(summary);
+                details.appendChild(table);
+                activityGroupsContainer.appendChild(details);
+            });
+        };
+
+        // Inicializar funciones
+        renderAveragesChart();
+        renderActivityGroups();
+    </script>
+</body>
+</html>
