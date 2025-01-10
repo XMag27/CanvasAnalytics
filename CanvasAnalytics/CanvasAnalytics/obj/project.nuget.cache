@@ -1,8 +1,8 @@
 {
   "version": 2,
-  "dgSpecHash": "PJx69/fFnhQ=",
+  "dgSpecHash": "71IdnxOWIUg=",
   "success": true,
-  "projectFilePath": "C:\\Users\\xensi\\source\\repos\\CanvasAnalytics\\CanvasAnalytics\\CanvasAnalytics.csproj",
+  "projectFilePath": "C:\\Users\\xensi\\tesis_final\\Tesis_Updated\\CanvasAnalytics\\CanvasAnalytics\\CanvasAnalytics\\CanvasAnalytics.csproj",
   "expectedPackageFiles": [
     "C:\\Users\\xensi\\.nuget\\packages\\microsoft.extensions.apidescription.server\\6.0.5\\microsoft.extensions.apidescription.server.6.0.5.nupkg.sha512",
     "C:\\Users\\xensi\\.nuget\\packages\\microsoft.openapi\\1.6.14\\microsoft.openapi.1.6.14.nupkg.sha512",

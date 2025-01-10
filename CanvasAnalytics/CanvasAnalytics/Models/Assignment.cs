@@ -18,5 +18,30 @@ namespace CanvasAnalytics.Models
 
         [JsonProperty("assignment_group_id")]
         public int AssignmentGroupId { get; set; }
+
+        
     }
+    public class AssignmentGroupAverage
+    {
+        public int AssignmentGroupId { get; set; }
+        public string AssignmentGroupName { get; set; }
+        public List<AssignmentAverage> Assignments { get; set; }
+    }
+
+    public class AssignmentAverage
+    {
+        public int AssignmentId { get; set; }
+        public string AssignmentName { get; set; }
+        public double AverageScore { get; set; }
+    }
+    public class AssignmentAnalytics
+    {
+        public int SubmissionId { get; set; }
+        public int UserId { get; set; }
+        public string UserName { get; set; }
+        public double? RawScore { get; set; }
+        public double PointsPossible { get; set; }
+        public double? WeightedScore { get; set; }
+    }
+
 }

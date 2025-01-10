@@ -43,6 +43,56 @@ public class CoursesController : ControllerBase
         }
     }
 
+    [HttpGet("{courseId}")]
+    public async Task<IActionResult> GetCourseById(int courseId)
+    {
+        try
+        {
+            // Obtiene los datos del curso desde el servicio
+            var course = await _canvasApiService.GetCourseByIdAsync(courseId);
+
+            // Retorna la información del curso
+            return Ok(course);
+        }
+        catch (HttpRequestException ex)
+        {
+            // Maneja errores de red o respuesta HTTP no exitosa
+            return StatusCode(500, new
+            {
+                error = "Error al conectar con la API de Canvas",
+                details = ex.Message
+            });
+        }
+        catch (Exception ex)
+        {
+            // Maneja errores generales
+            return StatusCode(500, new
+            {
+                error = "Ocurrió un error inesperado",
+                details = ex.Message
+            });
+        }
+    }
+
+    [HttpGet("{courseId}/tasks/{taskId}/not-submitted")]
+    public async Task<IActionResult> GetNotSubmittedStudents(int courseId, int taskId)
+    {
+        try
+        {
+            var notSubmittedStudents = await _canvasApiService.GetNotSubmittedStudentsAsync(courseId, taskId);
+
+            return Ok(notSubmittedStudents);
+        }
+        catch (Exception ex)
+        {
+            return StatusCode(500, new
+            {
+                error = "Error al obtener la lista de estudiantes que no entregaron",
+                details = ex.Message
+            });
+        }
+    }
+
     [HttpGet("{courseId}/students")]
     public async Task<IActionResult> GetStudents(int courseId)
     {
@@ -201,6 +251,7 @@ public class CoursesController : ControllerBase
             });
         }
     }
+
 
     [HttpGet("{courseId}/tasks/{taskId}/submission-histogram")]
     public async Task<IActionResult> GetSubmissionHistogram(int courseId, int taskId)
@@ -497,6 +548,31 @@ public class CoursesController : ControllerBase
         }
     }
 
+    [HttpGet("users/{userId}/name")]
+    public async Task<IActionResult> GetUserName(int userId)
+    {
+        try
+        {
+            // Llamar al servicio que obtiene información del usuario
+            var user = await _canvasApiService.GetUserAsync(userId);
+
+            if (user == null)
+            {
+                return NotFound(new { message = $"Usuario con ID {userId} no encontrado." });
+            }
+
+            // Retornar el nombre del usuario
+            return Ok(new { userId = user.Id, userName = user.Name });
+        }
+        catch (Exception ex)
+        {
+            return StatusCode(500, new
+            {
+                error = "Error al obtener el nombre del usuario",
+                details = ex.Message
+            });
+        }
+    }
 
 
 }

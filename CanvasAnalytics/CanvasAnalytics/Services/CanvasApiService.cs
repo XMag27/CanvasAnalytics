@@ -31,7 +31,44 @@ namespace CanvasAnalytics.Services
             _httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", _token);
             _httpClient.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
         }
+        public async Task<Course> GetCourseByIdAsync(int courseId)
+        {
+            // Construye la URL para el curso específico
+            var request = new HttpRequestMessage(HttpMethod.Get, $"courses/{courseId}");
 
+            // Configura los encabezados
+            request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", _token);
+            request.Headers.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
+            request.Headers.UserAgent.ParseAdd("CanvasApiClient/1.0");
+
+            // Registro de la solicitud
+            Console.WriteLine("---- Solicitud ----");
+            Console.WriteLine($"URL: {_httpClient.BaseAddress}{request.RequestUri}");
+            foreach (var header in request.Headers)
+            {
+                Console.WriteLine($"{header.Key}: {string.Join(", ", header.Value)}");
+            }
+
+            // Enviar la solicitud
+            var response = await _httpClient.SendAsync(request);
+
+            // Registro de la respuesta
+            Console.WriteLine("---- Respuesta ----");
+            Console.WriteLine($"Estado HTTP: {response.StatusCode}");
+            foreach (var header in response.Headers)
+            {
+                Console.WriteLine($"{header.Key}: {string.Join(", ", header.Value)}");
+            }
+
+            var content = await response.Content.ReadAsStringAsync();
+            Console.WriteLine($"Contenido: {content}");
+
+            // Manejar errores si el estado no es exitoso
+            response.EnsureSuccessStatusCode();
+
+            // Deserializa y retorna los datos
+            return JsonConvert.DeserializeObject<Course>(content);
+        }
         public async Task<List<Course>> GetCoursesAsync()
         {
             // Crea una solicitud personalizada
@@ -78,6 +115,62 @@ namespace CanvasAnalytics.Services
 
             var jsonResponse = await response.Content.ReadAsStringAsync();
             return JsonConvert.DeserializeObject<List<Student>>(jsonResponse);
+        }
+
+        public async Task<List<Student>> GetNotSubmittedStudentsAsync(int courseId, int taskId)
+        {
+            try
+            {
+                // Obtener la lista de estudiantes inscritos en el curso
+                Console.WriteLine($"Obteniendo estudiantes para el curso {courseId}...");
+                var studentsResponse = await _httpClient.GetAsync($"courses/{courseId}/students");
+                studentsResponse.EnsureSuccessStatusCode();
+                var studentsJson = await studentsResponse.Content.ReadAsStringAsync();
+                var students = JsonConvert.DeserializeObject<List<Student>>(studentsJson);
+                Console.WriteLine($"Total de estudiantes inscritos: {students.Count}");
+
+                // Obtener la lista de envíos para la tarea
+                Console.WriteLine($"Obteniendo envíos para la tarea {taskId}...");
+                var submissionsResponse = await _httpClient.GetAsync($"courses/{courseId}/assignments/{taskId}/submissions");
+                submissionsResponse.EnsureSuccessStatusCode();
+                var submissionsJson = await submissionsResponse.Content.ReadAsStringAsync();
+                var submissions = JsonConvert.DeserializeObject<List<Submission>>(submissionsJson);
+                Console.WriteLine($"Total de envíos encontrados: {submissions.Count}");
+
+                // Obtener los IDs de los estudiantes que entregaron la tarea
+                var submittedStudentIds = submissions
+                    .Where(submission =>
+                        submission.WorkflowState == "submitted" ||
+                        submission.SubmittedAt != null || // Si hay una fecha de envío
+                        submission.SubmissionType != null || // Si hay un tipo de envío
+                        (submission.Attachments != null && submission.Attachments.Any())) // Si hay archivos adjuntos
+                    .Select(submission => submission.UserId)
+                    .ToHashSet();
+
+                Console.WriteLine("IDs de estudiantes que entregaron:");
+                foreach (var id in submittedStudentIds)
+                {
+                    Console.WriteLine($" - {id}");
+                }
+
+                // Filtrar los estudiantes que no están en la lista de envíos válidos
+                var notSubmittedStudents = students
+                    .Where(student => !submittedStudentIds.Contains(student.Id))
+                    .ToList();
+
+                Console.WriteLine($"Total de estudiantes que no entregaron: {notSubmittedStudents.Count}");
+                foreach (var student in notSubmittedStudents)
+                {
+                    Console.WriteLine($" - {student.Id}: {student.Name}");
+                }
+
+                return notSubmittedStudents;
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error en GetNotSubmittedStudentsAsync: {ex.Message}");
+                throw;
+            }
         }
 
 

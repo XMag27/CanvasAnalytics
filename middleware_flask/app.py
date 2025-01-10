@@ -17,13 +17,44 @@ def lti_launch():
 
     # Redirigir a la vista correspondiente
     if role == "Student":
-        return render_template('student_view.html', user_id=user_id, course_id=course_id)
+        try:
+            # Obtener las tareas pendientes del usuario
+            pending_tasks_response = requests.get(
+                f"{API_BASE_URL}/StudentTasks/{user_id}/pending-tasks", verify=False
+            )
+            pending_tasks = pending_tasks_response.json() if pending_tasks_response.status_code == 200 else []
+
+            tasks_summary = []
+
+            for task in pending_tasks:
+                assignmentId = task['assignmentId']
+                task_summary_response = requests.get(
+                    f"{API_BASE_URL}/api/Courses/{course_id}/tasks/{assignmentId}/submission-summary", verify=False
+                )
+                task = task_summary_response.json() if task_summary_response.status_code == 200 else {}
+                tasks_summary.append(task)
+            
+
+            return render_template(
+                'student_view.html',
+                user_id=user_id,
+                course_id=course_id,
+                pending_tasks=pending_tasks,
+                submission_summary=tasks_summary,
+                curso=curso
+            )
+        except Exception as e:
+            print(f"Error al obtener datos del backend: {e}")
+            return jsonify({"error": "Error al obtener datos para la vista del estudiante"}), 500
+
     elif role == "Teacher":
         assignments = requests.get(f"{API_BASE_URL}/api/Courses/{course_id}/assignments", verify=False).json()
         students = requests.get(f"{API_BASE_URL}/api/Courses/{course_id}/students", verify=False).json()
         return render_template('teacher_view.html', user_id=user_id, course_id=course_id, students=students, assignments=assignments, curso=curso)
+
     else:
         return jsonify({"error": "Role not recognized"}), 400
+
 
 
 @app.route('/student/tasks/<user_id>/<course_id>', methods=['GET'])

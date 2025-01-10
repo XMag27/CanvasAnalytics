@@ -11,6 +11,22 @@
   },
   {
     "ContainingType": "CoursesController",
+    "Method": "GetCourseById",
+    "RelativePath": "api/Courses/{courseId}",
+    "HttpMethod": "GET",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "courseId",
+        "Type": "System.Int32",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "CoursesController",
     "Method": "GetAssignments",
     "RelativePath": "api/Courses/{courseId}/assignments",
     "HttpMethod": "GET",
@@ -138,6 +154,27 @@
   },
   {
     "ContainingType": "CoursesController",
+    "Method": "GetNotSubmittedStudents",
+    "RelativePath": "api/Courses/{courseId}/tasks/{taskId}/not-submitted",
+    "HttpMethod": "GET",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "courseId",
+        "Type": "System.Int32",
+        "IsRequired": true
+      },
+      {
+        "Name": "taskId",
+        "Type": "System.Int32",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "CoursesController",
     "Method": "GetSubmissionHistogram",
     "RelativePath": "api/Courses/{courseId}/tasks/{taskId}/submission-histogram",
     "HttpMethod": "GET",
@@ -189,6 +226,22 @@
       {
         "Name": "request",
         "Type": "CanvasAnalytics.Models.InstantMessageRequest",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "CoursesController",
+    "Method": "GetUserName",
+    "RelativePath": "api/Courses/users/{userId}/name",
+    "HttpMethod": "GET",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "userId",
+        "Type": "System.Int32",
         "IsRequired": true
       }
     ],

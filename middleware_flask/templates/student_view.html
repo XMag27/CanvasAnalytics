@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Student View</title>
+    <title>Entregables</title>
     <style>
         body {
             font-family: Arial, sans-serif;
@@ -12,79 +12,147 @@
             background-color: #f8f9fa;
         }
         header {
-            background-color: #007bff;
-            color: #fff;
+            background-color: #343a40;
+            color: white;
             padding: 1rem;
             text-align: center;
         }
         main {
-            padding: 2rem;
+            padding: 1rem;
         }
-        section {
-            margin-bottom: 2rem;
-        }
-        h2 {
-            font-size: 1.5rem;
+        .tabs {
+            display: flex;
+            justify-content: space-around;
+            border-bottom: 2px solid #ddd;
             margin-bottom: 1rem;
         }
-        ul {
-            list-style-type: none;
-            padding: 0;
+        .tab {
+            padding: 0.5rem 1rem;
+            cursor: pointer;
         }
-        li {
-            padding: 0.5rem;
-            margin-bottom: 0.5rem;
-            background-color: #fff;
+        .tab.active {
+            border-bottom: 2px solid #007bff;
+            font-weight: bold;
+        }
+        .task-list {
+            margin-top: 1rem;
+        }
+        .task-item {
             border: 1px solid #ddd;
             border-radius: 5px;
+            margin-bottom: 1rem;
+            padding: 1rem;
+            background-color: white;
+        }
+        .task-header {
             display: flex;
             justify-content: space-between;
             align-items: center;
         }
-        .btn {
-            background-color: #28a745;
-            color: white;
-            padding: 0.5rem 1rem;
-            border: none;
-            border-radius: 5px;
-            cursor: pointer;
+        .progress-bar-container {
+            background-color: #f0f0f0;
+            border-radius: 10px;
+            overflow: hidden;
+            margin-top: 0.5rem;
         }
-        .btn:hover {
-            background-color: #218838;
+        .progress-bar {
+            height: 10px;
+            background-color: #007bff;
+        }
+        .submitted-icon {
+            color: green;
+            font-weight: bold;
         }
     </style>
 </head>
 <body>
     <header>
-        <h1>Student View</h1>
+        <h1>Entregables</h1>
     </header>
     <main>
-        <section>
-            <h2>Tareas Entregadas</h2>
-            <ul>
-                <li>
-                    <span>Actividad 1</span>
-                    <button class="btn">Ver Detalles</button>
-                </li>
-                <li>
-                    <span>Actividad 2</span>
-                    <button class="btn">Ver Detalles</button>
-                </li>
-            </ul>
-        </section>
-        <section>
-            <h2>Tareas No Entregadas</h2>
-            <ul>
-                <li>
-                    <span>Actividad 3</span>
-                    <button class="btn">Ver Detalles</button>
-                </li>
-                <li>
-                    <span>Actividad 4</span>
-                    <button class="btn">Ver Detalles</button>
-                </li>
-            </ul>
-        </section>
+        <div class="tabs">
+            <div class="tab active" id="notSubmittedTab" onclick="showTab('notSubmitted')">No Entregados</div>
+            <div class="tab" id="submittedTab" onclick="showTab('submitted')">Entregados</div>
+        </div>
+        <div id="notSubmittedContainer" class="task-list">
+            <!-- Tareas no entregadas se mostrarán aquí -->
+        </div>
+        <div id="submittedContainer" class="task-list" style="display: none;">
+            <!-- Tareas entregadas se mostrarán aquí -->
+        </div>
     </main>
+    <script>
+        const pendingTasks = {{ pending_tasks | tojson }};
+        const submissionSummary = {{ submission_summary | tojson }};
+        const currentCourseId = {{ course_id }};
+    
+        console.log("Tareas pendientes:", pendingTasks);
+        console.log("Resumen de entregas:", submissionSummary);
+        console.log("ID del curso actual:", currentCourseId);
+    
+        const showTab = (tab) => {
+            document.getElementById('notSubmittedTab').classList.toggle('active', tab === 'notSubmitted');
+            document.getElementById('submittedTab').classList.toggle('active', tab === 'submitted');
+            document.getElementById('notSubmittedContainer').style.display = tab === 'notSubmitted' ? 'block' : 'none';
+            document.getElementById('submittedContainer').style.display = tab === 'submitted' ? 'block' : 'none';
+        };
+    
+        const renderTasks = () => {
+            const notSubmittedContainer = document.getElementById('notSubmittedContainer');
+            const submittedContainer = document.getElementById('submittedContainer');
+    
+            pendingTasks
+                .filter(task => task.courseId === currentCourseId)
+                .forEach(task => {
+                    const container = task.isSubmitted ? submittedContainer : notSubmittedContainer;
+                    console.log(`Procesando tarea: ${task.assignmentName} - Estado: ${task.isSubmitted}`);
+    
+                    // Validar si submissionSummary es un array
+                    let completionPercentage = 0;
+                    if (Array.isArray(submissionSummary)) {
+                        console.log("submissionSummary es un array. Buscando por assignmentId:", task.assignmentId);
+                        const taskSummary = submissionSummary.find(summary => summary.assignmentId === task.assignmentId);
+                        if (taskSummary) {
+                            completionPercentage = taskSummary.completionPercentage;
+                            console.log(`Encontrado: ${JSON.stringify(taskSummary)}`);
+                        } else {
+                            console.warn(`No se encontró una entrada para assignmentId: ${task.assignmentId}`);
+                        }
+                    } else if (submissionSummary.completionPercentage !== undefined) {
+                        // Si submissionSummary es un objeto con completionPercentage
+                        console.log("submissionSummary no es un array, usando completionPercentage directamente.");
+                        completionPercentage = submissionSummary.completionPercentage;
+                    } else {
+                        console.warn("submissionSummary no es un array ni tiene completionPercentage");
+                    }
+    
+                    console.log(`Tarea: ${task.assignmentName} - Porcentaje completado: ${completionPercentage}%`);
+    
+                    const taskItem = document.createElement('div');
+                    taskItem.className = 'task-item';
+    
+                    taskItem.innerHTML = `
+                        <div class="task-header">
+                            <div>
+                                <strong>${task.assignmentName}</strong>
+                                <div>Tu curso</div>
+                            </div>
+                            ${task.isSubmitted ? '<span class="submitted-icon">✓</span>' : ''}
+                        </div>
+                        <div class="progress-bar-container">
+                            <div class="progress-bar" style="width: ${completionPercentage}%"></div>
+                        </div>
+                        <div>${completionPercentage}% de estudiantes completaron esta tarea</div>
+                    `;
+    
+                    container.appendChild(taskItem);
+                });
+        };
+    
+        renderTasks();
+    </script>
+    
+    
+    
 </body>
 </html>

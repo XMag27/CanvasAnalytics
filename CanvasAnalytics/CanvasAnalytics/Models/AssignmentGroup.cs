@@ -9,6 +9,9 @@ namespace CanvasAnalytics.Models
 
         [JsonProperty("name")]
         public string Name { get; set; }
+
+        [JsonIgnore]
+        public List<Assignment> Assignments { get; set; } = new();
     }
 
 }
