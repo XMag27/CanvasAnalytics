@@ -10,6 +10,20 @@
             font-family: Arial, sans-serif;
             margin: 20px;
             padding: 0;
+            background-color: #fff;
+        }
+        header {
+            border-bottom: 1px solid #ddd;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+            padding: 1rem;
+            text-align: left;
+            background: #fff;
+        }
+        header h1{
+            font-size: 40px;
+            margin: 0;
+            color: #333;
+            margin: 10px auto;
         }
         .container {
             display: flex;
@@ -27,7 +41,10 @@
     </style>
 </head>
 <body>
-    <h1>Teacher Dashboard</h1>
+    <header>
+        <h1>Teacher Dashboard</h1>
+    </header>
+   
     <div class="container" id="dashboard-container">
         <!-- Charts will be rendered here -->
     </div>

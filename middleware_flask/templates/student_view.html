@@ -9,12 +9,25 @@
             font-family: Arial, sans-serif;
             margin: 0;
             padding: 0;
-            background-color: #f8f9fa;
+            background-color: #fff;
         }
         header {
-            background-color: #343a40;
-            color: white;
+            border-bottom: 1px solid #ddd;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
             padding: 1rem;
+            text-align: center;
+            background: #fff;
+        }
+        header h1{
+            font-size: 40px;
+            margin: 0;
+            color: #333;
+            margin: 10px auto;
+        }
+        h2{
+            font-size: 20px;
+            font-weight: bold;
+            color: #333;
             text-align: center;
         }
         main {
@@ -24,6 +37,7 @@
             display: flex;
             justify-content: space-around;
             border-bottom: 2px solid #ddd;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
             margin-bottom: 1rem;
         }
         .tab {
@@ -71,8 +85,16 @@
     </header>
     <main>
         <div class="tabs">
-            <div class="tab active" id="notSubmittedTab" onclick="showTab('notSubmitted')">No Entregados</div>
-            <div class="tab" id="submittedTab" onclick="showTab('submitted')">Entregados</div>
+            <div class="tab active" id="notSubmittedTab" onclick="showTab('notSubmitted')">
+                <h2>
+                    No Entregados
+                </h2> 
+            </div>
+            <div class="tab" id="submittedTab" onclick="showTab('submitted')">
+                <h2>
+                    Entregados
+                </h2>
+            </div>
         </div>
         <div id="notSubmittedContainer" class="task-list">
             <!-- Tareas no entregadas se mostrarán aquí -->

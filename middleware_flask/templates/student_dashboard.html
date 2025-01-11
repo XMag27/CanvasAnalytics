@@ -9,12 +9,26 @@
             font-family: Arial, sans-serif;
             margin: 0;
             padding: 0;
-            background-color: #f8f9fa;
+            background-color: #fff;
         }
         header {
-            background-color: #343a40;
-            color: #fff;
+            border-bottom: 1px solid #ddd;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
             padding: 1rem;
+            text-align: left;
+            background: #fff;
+        }
+        header h1{
+            font-size: 40px;
+            margin: 0;
+            color: #333;
+            margin: 10px auto;
+        }
+        h2{
+            font-size: 30px;
+            padding: 10px 15px;
+            font-weight: bold;
+            color: #333;
             text-align: center;
         }
         main {
@@ -26,8 +40,10 @@
         canvas {
             max-width: 100%;
         }
+        
         .activity-list {
             margin-top: 2rem;
+            padding: 30px;
         }
         details {
             margin-bottom: 1rem;
@@ -58,10 +74,10 @@
 </head>
 <body>
     <header>
-        <h1>Dashboard de {{ student_name_data['userName'] }}</h1>
+        <h1>Historial de {{ student_name_data['userName'] }}</h1>
     </header>
     <main>
-        <div>
+        <div class="container">
             <h2>Calificaciones por Actividad</h2>
             <canvas id="gradesChart"></canvas>
         </div>
