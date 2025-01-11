@@ -9,16 +9,81 @@
             font-family: Arial, sans-serif;
             margin: 0;
             padding: 0;
-            background-color: #f8f9fa;
+            background-color: #fff;
         }
         header {
-            background-color: #343a40;
-            color: #fff;
+            border-bottom: 1px solid #ddd;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
             padding: 1rem;
+            text-align: left;
+            background: #fff;
+        }
+        header h3{
+            font-size: 40px;
+            margin: 0;
+            color: #333;
+            margin: 10px auto;
+        }
+        header h1{
+            font-size: 20px;
+            margin: 5px 0 10px;
+            color: #666;
+            margin: 10px auto;
+            font-weight: 200;
+        }
+        h2{
+            font-size: 30px;
+            padding: 10px 15px;
+            font-size: 16px;
+            font-weight: bold;
+            color: #333;
             text-align: center;
+        }
+        h3 {
+        margin-top: 0;
+        font-size: 18px;
+        color: #333;
+        text-align: center;
         }
         main {
             padding: 2rem;
+        }
+        .menu-container {
+            max-width: 300px;
+            margin: 0 auto;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            align-self: flex-start;
+            padding: 1rem;
+        }
+        label {
+            color: #333;
+            margin: 10px auto;
+            font-weight: 500;
+        }
+        select{
+            display: flex;
+            align-items: center;
+            padding: 10px 15px;
+            font-size: 16px;
+            font-weight: bold;
+            color: #333;
+            background-color: #fff;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            cursor: pointer;
+            width: 100%;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+        }
+        select:hover{
+            border-color: #aaa;
+        }
+        select::after {
+            content: '▼'; /* Icono de flecha hacia abajo */
+            margin-left: auto;
+            font-size: 12px;
+            color: #666;
         }
         .chart-container {
             margin: 2rem 0;
@@ -55,8 +120,12 @@
         }
         details {
             margin-top: 1rem;
+            margin-top: 1rem;
+            border-bottom: 1px solid #ddd;
+            padding: 8px;
         }
         summary {
+            padding: 8px;
             font-weight: bold;
             cursor: pointer;
         }
@@ -77,10 +146,11 @@
 </head>
 <body>
     <header>
-        <h1>Task Dashboard - Tarea {{ task_id }}</h1>
+        <h1>{{curso}}</h1>
+        <h3>Task Dashboard - Tarea {{ task_id }}</h3>
     </header>
     <main>
-        <div>
+        <div class="menu-container">
             <label for="viewSelect">Selecciona una vista:</label>
             <select id="viewSelect" onchange="handleViewChange()">
                 <option value="general">General</option>
@@ -88,28 +158,55 @@
                 <option value="notSubmitted">No Entregados</option>
             </select>
         </div>
+
         <section id="charts" class="chart-container">
-            <h2 id="chartTitle">Gráfico de Línea: Entregas por Fecha</h2>
-            <canvas id="lineChart"></canvas>
+            <h2 id="chartTitle">Cantidad de estudiantes entregaron la actividad</h2>
             <canvas id="barChart"></canvas>
+            <h2 id="chartTitle">Historial de entregas de los estudiantes</h2>
+            <canvas id="lineChart"></canvas>
         </section>
+
         <section id="rangeContainer" class="chart-container" style="display:none;">
-            <h2 id="chartRangeTitle">Cantidad de Estudiantes por Rangos</h2>
-            <div class="range-form">
-                <label for="lowRange">Calificación Baja:</label>
-                <input type="number" id="lowRange" min="0" max="100" value="0">
-                <label for="highRange">a</label>
-                <input type="number" id="highRange" min="0" max="100" value="59">
-                <label for="highLowRange">Calificación Alta:</label>
-                <input type="number" id="highLowRange" min="0" max="100" value="60">
-                <label for="upperRange">a</label>
-                <input type="number" id="upperRange" min="0" max="100" value="100">
-                <button onclick="updateRangeChartAndLists()">Aplicar</button>
+            <div class="container-rangos">
+                <div>
+                    <div class="form-container">
+                        <h3>Rangos de Calificaciones</h3>
+                        <div class="range-form">
+                            <div class="form-group">
+                                <label for="lowRange">Calificación Baja</label>
+                                <div class="range-inputs">
+                                    <input type="number" id="lowRange" min="0" max="100" value="0">
+                                    <label for="highRange">a</label>
+                                    <input type="number" id="highRange" min="0" max="100" value="59">
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label for="highLowRange">Calificación Alta</label>
+                                <div class="range-inputs">
+                                    <input type="number" id="highLowRange" min="0" max="100" value="60">
+                                    <label for="upperRange">a</label>
+                                    <input type="number" id="upperRange" min="0" max="100" value="100">
+                                </div>
+                            </div>
+                            <button class="apply-button" onclick="updateRangeChartAndLists()">Aplicar</button>
+                    </div>
+                    <div class="note-container">
+                        <div class="note-box">
+                            <strong>Nota:</strong> Todas las calificaciones están ponderadas sobre 100.
+                        </div>
+                    </div>
+                </div>
+                <div id="containerCalificaciones" class="chart-container">
+                    <h3 id="chartRangeTitle">Cantidad de estudiantes con el rango de calificaciones asignados</h3>
+                    <canvas id="rangeBarChart"></canvas>
+                </div>
+
             </div>
-            <canvas id="rangeBarChart"></canvas>
         </section>
+
+
         <section id="studentLists" class="chart-container" style="display:none;">
-            <h2 id="studentListTitle">Estudiantes por Rangos de Calificación</h2>
+            <h3 class="studentListTitle">Estudiantes por Rangos de Calificación</h3>
             <details>
                 <summary>Calificación Baja</summary>
                 <ul id="lowGradeStudents" style="list-style-type: none; padding: 0;"></ul>
@@ -119,8 +216,9 @@
                 <ul id="highGradeStudents" style="list-style-type: none; padding: 0;"></ul>
             </details>
         </section>
+
         <section id="notSubmittedContainer" class="chart-container" style="display:none;">
-            <h2>No Entregados</h2>
+            <h3>No Entregados</h3>
             <div class="not-submitted-section">
                 <div class="not-submitted-header">
                     <label for="reminderPeriod">Período de Recordatorio:</label>
