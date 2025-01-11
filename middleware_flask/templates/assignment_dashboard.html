@@ -306,7 +306,7 @@
             <canvas id="lineChart"></canvas>
         </section>
 
-        <section id="rangeContainer" class="chart-container" style="display:block;">
+        <section id="rangeContainer" class="chart-container" style="display:none;">
             <div class="container-rangos">
                 <div>
                     <div class="form-container">
@@ -359,7 +359,7 @@
             </details>
         </section>
 
-        <section id="notSubmittedContainer" class="chart-container" style="display:block;">
+        <section id="notSubmittedContainer" class="chart-container" style="display:none;">
             <h3>No Entregados</h3>
             <div class="not-submitted-section">
                 <div class="container-message-timer">
@@ -600,26 +600,61 @@
 
             console.log("Estudiantes no entregados renderizados:", NotSubmitted);
         }
-        function handleSaveReminder(event) {
-            event.preventDefault(); // Evitar recargar la página
+        async function handleSaveReminder(event) {
+    event.preventDefault(); // Evitar recargar la página
 
-            const startDate = document.getElementById('startDate').value;
-            const endDate = document.getElementById('endDate').value;
-            const reminderDay = document.getElementById('reminderDay').value;
-            const reminderTime = document.getElementById('reminderTime').value;
-            const customMessage = document.getElementById('customMessage').value;
+    const startDate = document.getElementById('startDate').value;
+    const endDate = document.getElementById('endDate').value;
+    const reminderDay = document.getElementById('reminderDay').value;
+    const reminderTime = document.getElementById('reminderTime').value;
+    const customMessage = document.getElementById('customMessage').value;
 
-            console.log("Guardando recordatorio:", {
-                startDate,
-                endDate,
-                reminderDay,
-                reminderTime,
-                customMessage,
+    console.log("Preparando para guardar recordatorio y enviar mensajes:", {
+        startDate,
+        endDate,
+        reminderDay,
+        reminderTime,
+        customMessage,
+    });
+
+    // Objeto NotSubmitted con los estudiantes que no han entregado
+    
+    console.log("Estudiantes que no entregaron:", NotSubmitted);
+
+    // Iterar sobre cada estudiante y enviar el mensaje
+    for (const student of NotSubmitted) {
+        console.log(`Preparando mensaje para el estudiante: ${student.name}, ID: ${student.id}`);
+
+        const messagePayload = {
+            userId: student.id,
+            subject: "Recordatorio: Tarea pendiente",
+            body: customMessage || `Hola ${student.name}, recuerda completar la tarea antes del ${endDate}.`,
+        };
+
+        console.log("Payload del mensaje:", messagePayload);
+
+        try {
+            const response = await fetch('https://localhost:7138/api/Courses/send-message', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(messagePayload),
             });
 
-            // Aquí puedes enviar estos datos al backend usando fetch o Axios
-            alert('Recordatorio guardado correctamente.');
+            if (response.ok) {
+                console.log(`Mensaje enviado correctamente a ${student.name} (ID: ${student.id})`);
+            } else {
+                console.error(`Error al enviar mensaje a ${student.name} (ID: ${student.id}):`, await response.json());
+            }
+        } catch (error) {
+            console.error(`Error de red al enviar mensaje a ${student.name} (ID: ${student.id}):`, error);
+        }
+    }
+
+    alert('Recordatorio guardado y mensajes enviados correctamente.');
 }
+
         window.onload = renderGeneralCharts;
 
     </script>

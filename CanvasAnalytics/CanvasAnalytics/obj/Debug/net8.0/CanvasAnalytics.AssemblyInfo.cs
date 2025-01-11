@@ -14,7 +14,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("CanvasAnalytics")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+685d38f780dca8e1f732d8664174a3f6e0bf8c82")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+2b38ed1748f2bf121a2c963f62ed014060da6161")]
 [assembly: System.Reflection.AssemblyProductAttribute("CanvasAnalytics")]
 [assembly: System.Reflection.AssemblyTitleAttribute("CanvasAnalytics")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]
