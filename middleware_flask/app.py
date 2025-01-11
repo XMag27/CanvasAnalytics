@@ -12,6 +12,7 @@ def lti_launch():
     course_id = request.form.get("custom_canvas_course_id")
     roles = request.form.get("roles")
     curso = request.form.get("context_title")
+    canvas_url = "http://canvas.docker"
     # Determinar el rol
     role = "Teacher" if "Instructor" in roles or "Teacher" in roles else "Student"
 
@@ -50,7 +51,7 @@ def lti_launch():
     elif role == "Teacher":
         assignments = requests.get(f"{API_BASE_URL}/api/Courses/{course_id}/assignments", verify=False).json()
         students = requests.get(f"{API_BASE_URL}/api/Courses/{course_id}/students", verify=False).json()
-        return render_template('teacher_view.html', user_id=user_id, course_id=course_id, students=students, assignments=assignments, curso=curso)
+        return render_template('teacher_view.html', user_id=user_id, course_id=course_id, students=students, assignments=assignments, curso=curso, canvas_url=canvas_url)
 
     else:
         return jsonify({"error": "Role not recognized"}), 400
@@ -126,7 +127,8 @@ def student_dashboard():
     return render_template(
         'student_dashboard.html',
         student_name_data=student_name_data,
-        grades_data=grades_data
+        grades_data=grades_data,
+        student_id=student_id
     )
 
 @app.route('/teacher/task-dashboard')

@@ -73,6 +73,15 @@
         .btn:hover {
             background-color: #0056b3;
         }
+        a.student-link {
+            text-decoration: none; /* Elimina el subrayado */
+            color: inherit; /* Usa el color del texto circundante */
+            cursor: pointer; /* Muestra el cursor de enlace */
+        }
+
+        a.student-link:hover {
+            text-decoration: underline; /* Opcional: Subraya el texto al pasar el mouse */
+        }
     </style>
 </head>
 <body>
@@ -109,7 +118,9 @@
             <ul>
                 {% for student in students %}
                 <li>
-                    <span>{{ student.name }}</span>
+                    <a href="{{canvas_url}}/courses/{{ course_id }}/grades/{{ student.id }}" class="student-link" target="_blank" >
+                        {{ student.name }}
+                    </a>
                     <button class="btn" onclick="redirectToStudentDashboard({{ course_id }}, {{ student.id }})">
                         Ver Historial
                     </button>
