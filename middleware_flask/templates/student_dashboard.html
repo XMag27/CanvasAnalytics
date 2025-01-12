@@ -158,16 +158,16 @@
                     <thead>
                         <tr>
                             <th>Nombre de la Actividad</th>
-                            <th>Puntos Máximos</th>
-                            <th>Nota Ponderada (%)</th>
+                            <th>Nota Obtenida</th>
+                            <th>Nota Ponderada (%100)</th>
                         </tr>
                     </thead>
                     <tbody>
                         ${activityGroups[group].map(activity => `
                             <tr>
                                 <td>${activity.assignmentName}</td>
-                                <td>${activity.maxPoints}</td>
-                                <td>${activity.weightedGrade.toFixed(2)}</td>
+                                <td>${activity.grade} / ${activity.maxPoints}</td>
+                                <td>${activity.weightedGrade.toFixed(2)} / 100</td>
                             </tr>
                         `).join('')}
                     </tbody>

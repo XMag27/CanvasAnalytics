@@ -15,16 +15,16 @@
             border-bottom: 1px solid #ddd;
             box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
             padding: 1rem;
-            text-align: left;
+            text-align: center;
             background: #fff;
         }
-        header h3{
+        header h1{
             font-size: 40px;
             margin: 0;
             color: #333;
             margin: 10px auto;
         }
-        header h1{
+        header h3{
             font-size: 20px;
             margin: 5px 0 10px;
             color: #666;
@@ -32,7 +32,7 @@
             font-weight: 200;
         }
         h2{
-            font-size: 30px;
+            font-size: 28px;
             padding: 10px 15px;
             font-weight: bold;
             color: #333;
@@ -57,7 +57,7 @@
         label {
             color: #333;
             margin: 10px auto;
-            font-weight: 500;
+            font-weight: bold;
         }
         select{
             display: flex;
@@ -92,13 +92,17 @@
         button {
             background-color: #007bff;
             color: white;
-            padding: 0.5rem 1rem;
+            padding: 10px 15px;
             border: none;
             border-radius: 5px;
             cursor: pointer;
             width: auto;
+            align-self: center;
+            align-items: center;
+            font-size: 14px;
+            margin-top: 5px;
         }
-
+        
         button:hover {
             background-color: #0056b3;
         }
@@ -162,44 +166,40 @@
             text-align: center;
             color: #333;
             margin: 10px;
-            font-weight: 500;
+            font-weight: bold;
         }
         
         .chart-container {
             margin: 2rem 0;
         }
         
-        .container-rangos {
-            display: flex;
-            gap: 20px;
-            flex-wrap: wrap;
-            justify-content: center;
-            align-items: stretch;
-            
-        }
-        .container-message-timer {
-            display: flex;
-            flex-direction: row;
-            padding: 10px;
-            flex-wrap: wrap;
-            justify-content: center;
-            align-items: stretch;
-            
-        }
         .form-container {
             background-color: #fff;
             border: 1px solid #ddd;
             border-radius: 8px;
             padding: 20px;
-            width: 300px;
+            width: 90%;
             box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
-            align-items: stretch;
             margin: 20px auto;
-            flex-direction: row;
+            display: flex;
+            flex-wrap: wrap;
+            flex-direction: column;
+            justify-content: center;
+
         }
+        .range-form{
+            display: flex;
+            justify-content: space-evenly;
+            flex-direction: row;
+            flex-wrap: wrap;
+            width: 100%;
+        }
+
         .form-group {
             width: auto;
             align-self: center;
+            text-align: center;
+            
         }
 
         .form-group label {
@@ -212,13 +212,9 @@
             display: flex;
             align-items: center;
             gap: 5px;
+            padding: 5px;
         }
 
-        
-        note-container {
-            margin-top: 20px;
-            text-align: center;
-        }
         .note-box {
             margin-top: 20px;
             display: inline-block;
@@ -234,47 +230,10 @@
             font-weight: bold;
             color: #333;
         }
-        
-        
-        .container-timer{
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            padding: 10px;
-            margin: 20px auto;
-            width: 40%;
-            box-sizing: border-box;
-            
-        }
-        .container-message{
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            padding: 20px 20px;
-            flex-grow: 4;
-            width: 53%;
-            box-sizing: border-box;
-            flex-grow: 2;
-        }
-        
-        .reminder-period {
-            padding: 20px;
-            border: 1px solid #ddd;
-            border-radius: 5px;
-            cursor: pointer;
-            width: 100%;
-            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
-            display: flex;
-            Flex-direction: column;
-            padding: 20px;
-            width: 100%;
-            align-items: stretch;
-            gap: 15px;
-        }
-        .container-message form {
-            display: flex;
-            flex-direction: column;
-            gap: 10px;
+        @media (max-width: 520px) {
+            button{
+                width: 70%;
+            }
         }
     </style>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
@@ -299,37 +258,37 @@
             <canvas id="courseAveragesChart"></canvas>
         </div>
         <!-- Vista de rangos -->
-        <div id="rangeView" style="display: none;">
-            <div>
-                <div class="form-container">
-                    <h3>Rangos de Calificaciones</h3>
-                    <div class="range-form">
-                        <div class="form-group">
-                            <label for="lowRange">Calificación Baja</label>
-                            <div class="range-inputs">
-                                <input type="number" id="lowRange" min="0" max="100" value="0">
-                                <label for="highRange">a</label>
-                                <input type="number" id="highRange" min="0" max="100" value="59">
-                            </div>
+        <div id="rangeView" style="display: block;">
+            <div class="form-container">
+                <h3>Rangos de Calificaciones</h3>
+                <div class="range-form">
+                    <div class="form-group">
+                        <label for="lowRange">Calificación Baja</label>
+                        <div class="range-inputs">
+                            <input type="number" id="lowRange" min="0" max="100" value="0">
+                            <label for="highRange">a</label>
+                            <input type="number" id="highRange" min="0" max="100" value="59">
                         </div>
-                        <div class="form-group">
-                            <label for="highLowRange">Calificación Alta</label>
-                            <div class="range-inputs">
-                                <input type="number" id="highLowRange" min="0" max="100" value="60">
-                                <label for="upperRange">a</label>
-                                <input type="number" id="upperRange" min="0" max="100" value="100">
-                            </div>
+                    </div>
+                    <div class="form-group">
+                        <label for="highLowRange">Calificación Alta</label>
+                        <div class="range-inputs">
+                            <input type="number" id="highLowRange" min="0" max="100" value="60">
+                            <label for="upperRange">a</label>
+                            <input type="number" id="upperRange" min="0" max="100" value="100">
                         </div>
-                        <button class="apply-button" onclick="updateRangeChartAndLists()">Aplicar</button>
                     </div>
                 </div>
-                <div class="note-container">
-                    <div class="note-box">
-                        <strong>Nota:</strong> Todas las calificaciones están ponderadas sobre 100.
-                    </div>
+                <button class="apply-button" onclick="updateRangeChartAndLists()">Aplicar</button>
+            </div>
+                
+           <h2>Cantidad de estudiantes con el rango de calificaciones asignados</h2>
+            <canvas id="rangeChart"></canvas>
+            <div class="note-container">
+                <div class="note-box">
+                    <strong>Nota:</strong> Todas las calificaciones están ponderadas sobre 100.
                 </div>
             </div>
-            <canvas id="rangeChart"></canvas>
         </div>
     </section>
     </main>
