@@ -1,5 +1,7 @@
 from flask import Flask, request, jsonify, render_template
 import requests
+from concurrent.futures import ThreadPoolExecutor
+
 
 app = Flask(__name__)
 API_BASE_URL = "https://localhost:7138"
@@ -178,17 +180,40 @@ def task_dashboard():
         grades_data=grades_data,
         not_submitted=not_submitted
     )
+
 @app.route('/teacher/course-dashboard')
 def course_dashboard():
     course_id = request.args.get('course_id')
-
     if not course_id:
         return "Course ID not provided", 400
 
     try:
         # Consulta al API para obtener promedios de tareas
         averages_response = requests.get(f"https://localhost:7138/api/Courses/{course_id}/assignments/averages", verify=False)
-        averages_data = averages_response.json() if averages_response.status_code == 200 else None
+        averages_data = averages_response.json() if averages_response.status_code == 200 else []
+
+        # Función para obtener las calificaciones de una tarea
+        def fetch_grades(task):
+            try:
+                task_id = task['assignmentId']
+                task_name = task['assignmentName']
+                grades_response = requests.get(
+                    f"https://localhost:7138/api/Courses/{course_id}/assignments/{task_id}/analytics",
+                    verify=False
+                )
+                grades_data = grades_response.json() if grades_response.status_code == 200 else []
+                return {'id_tarea': task_id, 'nombre_tarea': task_name, 'calificaciones': grades_data}
+            except Exception as e:
+                print(f"Error al obtener calificaciones para la tarea {task['assignmentId']}: {e}")
+                return {'id_tarea': task['assignmentId'], 'nombre_tarea': task['assignmentName'], 'calificaciones': []}
+
+        # Paralelizar las solicitudes de calificaciones
+        with ThreadPoolExecutor() as executor:
+            calificaciones = list(executor.map(fetch_grades, averages_data))
+
+        # Obtener el número de estudiantes
+        students_response = requests.get(f"https://localhost:7138/api/Courses/{course_id}/students", verify=False)
+        student_number = len(students_response.json() if students_response.status_code == 200 else [])
 
     except Exception as e:
         print(f"Error al obtener datos de las APIs: {e}")
@@ -197,7 +222,9 @@ def course_dashboard():
     return render_template(
         'course_dashboard.html',
         course_id=course_id,
-        averages_data=averages_data
+        averages_data=averages_data,
+        calificaciones=calificaciones,
+        student_number=student_number
     )
 
 

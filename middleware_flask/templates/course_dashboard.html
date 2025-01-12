@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Course Dashboard</title>
     <style>
-        body {
+               body {
             font-family: Arial, sans-serif;
             margin: 0;
             padding: 0;
@@ -18,11 +18,18 @@
             text-align: left;
             background: #fff;
         }
-        header h1{
+        header h3{
             font-size: 40px;
             margin: 0;
             color: #333;
             margin: 10px auto;
+        }
+        header h1{
+            font-size: 20px;
+            margin: 5px 0 10px;
+            color: #666;
+            margin: 10px auto;
+            font-weight: 200;
         }
         h2{
             font-size: 30px;
@@ -31,73 +38,320 @@
             color: #333;
             text-align: center;
         }
+        h3 {
+            margin-top: 0;
+            font-size: 18px;
+            color: #333;
+            text-align: center;
+        }
+        
+        h4{
+            margin: 5px;
+            font-size: 16px;
+            color: #333;
+            text-align: left;
+        }
         main {
             padding: 2rem;
         }
-        .chart-container {
-            margin: 2rem 0;
+        label {
+            color: #333;
+            margin: 10px auto;
+            font-weight: 500;
+        }
+        select{
+            display: flex;
+            align-items: center;
+            padding: 10px 15px;
+            font-size: 16px;
+            font-weight: bold;
+            color: #333;
+            background-color: #fff;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            cursor: pointer;
+            width: 100%;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+        }
+        select:hover{
+            border-color: #aaa;
+        }
+        select::after {
+            content: '▼'; 
+            margin-left: auto;
+            font-size: 12px;
+            color: #666;
+        }
+        input {
+            padding: 10px;
+            font-size: 14px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+        }
+        
+        button {
+            background-color: #007bff;
+            color: white;
+            padding: 0.5rem 1rem;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            width: auto;
+        }
+
+        button:hover {
+            background-color: #0056b3;
+        }
+        details {
+            margin-top: 1rem;
+            border-bottom: 1px solid #ddd;
+            padding: 8px;
+        }
+        summary {
+            padding: 8px;
+            font-weight: bold;
+            cursor: pointer;
+        }
+        ul {
+            list-style-type: none;
+            padding: 0;
+            margin: 0;
+        }
+        li {
+            padding: 0.5rem;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            margin-bottom: 0.5rem;
+            background-color: #fff;
+        }
+        textarea{
+            width: 100%;
+            height: 300px;
+            padding: 15px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+            max-width: 400px;
+
         }
         canvas {
             max-width: 100%;
+            height: auto;
         }
-        .activity-list {
-            margin-top: 2rem;
-        }
-        details {
-            margin-bottom: 1rem;
-            border: 1px solid #ddd;
-            border-radius: 5px;
-            background-color: #fff;
+        .menu-container {
+            max-width: 300px;
+            margin: 0 auto;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            align-self: flex-start;
             padding: 1rem;
         }
-        summary {
-            font-weight: bold;
-            cursor: pointer;
-            margin-bottom: 0.5rem;
-        }
-        table {
+        .reminder-form{
+            display: flex;
+            flex-direction: row;
+            align-items: center;
+            align-self: center;
             width: 100%;
-            border-collapse: collapse;
+            flex-wrap: wrap;
+            margin: auto;
+            gap: 40px;
         }
-        th, td {
+        
+        .reminder-form label{
+            text-align: center;
+            color: #333;
+            margin: 10px;
+            font-weight: 500;
+        }
+        
+        .chart-container {
+            margin: 2rem 0;
+        }
+        
+        .container-rangos {
+            display: flex;
+            gap: 20px;
+            flex-wrap: wrap;
+            justify-content: center;
+            align-items: stretch;
+            
+        }
+        .container-message-timer {
+            display: flex;
+            flex-direction: row;
+            padding: 10px;
+            flex-wrap: wrap;
+            justify-content: center;
+            align-items: stretch;
+            
+        }
+        .form-container {
+            background-color: #fff;
             border: 1px solid #ddd;
-            padding: 0.5rem;
+            border-radius: 8px;
+            padding: 20px;
+            width: 300px;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+            align-items: stretch;
+            margin: 20px auto;
+            flex-direction: row;
+        }
+        .form-group {
+            width: auto;
+            align-self: center;
+        }
+
+        .form-group label {
+            font-size: 14px;
+            color: #555;
+            padding: 10px;
+        }
+        
+        .range-inputs {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+        
+        note-container {
+            margin-top: 20px;
             text-align: center;
         }
-        th {
-            background-color: #f4f4f4;
+        .note-box {
+            margin-top: 20px;
+            display: inline-block;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            background-color: #f9f9f9;
+            font-size: 12px;
+            color: #666;
+        }
+
+        .note-box strong {
+            font-weight: bold;
+            color: #333;
+        }
+        
+        
+        .container-timer{
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 10px;
+            margin: 20px auto;
+            width: 40%;
+            box-sizing: border-box;
+            
+        }
+        .container-message{
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px 20px;
+            flex-grow: 4;
+            width: 53%;
+            box-sizing: border-box;
+            flex-grow: 2;
+        }
+        
+        .reminder-period {
+            padding: 20px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            cursor: pointer;
+            width: 100%;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+            display: flex;
+            Flex-direction: column;
+            padding: 20px;
+            width: 100%;
+            align-items: stretch;
+            gap: 15px;
+        }
+        .container-message form {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
         }
     </style>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </head>
 <body>
     <header>
-        <h1>Dashboard del Curso {{ course_id }}</h1>
+        <h1>Curso {{ course_id }}</h1>
     </header>
     <main>
-        <div>
+        <div class="menu-container">
+            <label for="viewSelect">Selecciona una vista:</label>
+            <select id="viewSelect" onchange="handleViewChange()">
+                <option value="averages">Promedio del Curso</option>
+                <option value="range">Rango de Calificaciones</option>
+            </select>
+        </div>
+        
+        <!-- Vista de promedios -->
+        <section id="charts" class="chart-container">
+        <div id="averagesView">
             <h2>Promedios Ponderados por Actividad</h2>
             <canvas id="courseAveragesChart"></canvas>
         </div>
-        <div class="activity-list">
-            <h2>Actividades por Grupo</h2>
-            <div id="activityGroups">
-                <!-- Grupos de actividades se llenarán aquí -->
+        <!-- Vista de rangos -->
+        <div id="rangeView" style="display: none;">
+            <div>
+                <div class="form-container">
+                    <h3>Rangos de Calificaciones</h3>
+                    <div class="range-form">
+                        <div class="form-group">
+                            <label for="lowRange">Calificación Baja</label>
+                            <div class="range-inputs">
+                                <input type="number" id="lowRange" min="0" max="100" value="0">
+                                <label for="highRange">a</label>
+                                <input type="number" id="highRange" min="0" max="100" value="59">
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label for="highLowRange">Calificación Alta</label>
+                            <div class="range-inputs">
+                                <input type="number" id="highLowRange" min="0" max="100" value="60">
+                                <label for="upperRange">a</label>
+                                <input type="number" id="upperRange" min="0" max="100" value="100">
+                            </div>
+                        </div>
+                        <button class="apply-button" onclick="updateRangeChartAndLists()">Aplicar</button>
+                    </div>
+                </div>
+                <div class="note-container">
+                    <div class="note-box">
+                        <strong>Nota:</strong> Todas las calificaciones están ponderadas sobre 100.
+                    </div>
+                </div>
             </div>
+            <canvas id="rangeChart"></canvas>
         </div>
+    </section>
     </main>
+
     <script>
         // Datos pasados desde Flask
         const averagesData = {{ averages_data | tojson }};
-        console.log("Datos de promedios ponderados:", averagesData);
+        const scores = {{ calificaciones | tojson }};
+        const estudiantes = {{ student_number | tojson }};
+        let averagesChart, rangeChart;
 
-        // Crear gráfico de promedios ponderados
+        console.log("Estudiantes:", estudiantes);
+        console.log("Datos de promedios ponderados:", averagesData);
+        console.log("Calificaciones:", scores);
+
         const renderAveragesChart = () => {
             const ctx = document.getElementById('courseAveragesChart').getContext('2d');
             const labels = averagesData.map(item => item.assignmentName);
             const data = averagesData.map(item => item.weightedAverage);
 
-            new Chart(ctx, {
+            if (averagesChart) averagesChart.destroy();
+            averagesChart = new Chart(ctx, {
                 type: 'bar',
                 data: {
                     labels: labels,
@@ -121,62 +375,78 @@
             });
         };
 
-        // Agrupar actividades por categoría
-        const groupActivitiesByCategory = (activities) => {
-            const grouped = {};
-            activities.forEach(activity => {
-                const group = activity.assignmentGroup || "Sin Categoría";
-                if (!grouped[group]) {
-                    grouped[group] = [];
-                }
-                grouped[group].push(activity);
-            });
-            return grouped;
-        };
+        const renderRangeChart = () => {
+            const ctx = document.getElementById('rangeChart').getContext('2d');
+            const lowRange = parseFloat(document.getElementById('lowRange').value);
+            const highRange = parseFloat(document.getElementById('highRange').value);
+            const highLowRange = parseFloat(document.getElementById('highLowRange').value);
+            const upperRange = parseFloat(document.getElementById('upperRange').value);
 
-        // Renderizar actividades agrupadas
-        const renderActivityGroups = () => {
-            const activityGroups = groupActivitiesByCategory(averagesData);
-            const activityGroupsContainer = document.getElementById('activityGroups');
+            const labels = scores.map(task => task.nombre_tarea);
+            const lowCounts = scores.map(task =>
+                task.calificaciones.filter(student => student.weightedScore >= lowRange && student.weightedScore <= highRange).length
+            );
+            const highCounts = scores.map(task =>
+                task.calificaciones.filter(student => student.weightedScore >= highLowRange && student.weightedScore <= upperRange).length
+            );
 
-            Object.keys(activityGroups).forEach(group => {
-                const details = document.createElement('details');
-                const summary = document.createElement('summary');
-                summary.textContent = `${group} (Promedio Ponderado: ${
-                    (
-                        activityGroups[group].reduce((sum, activity) => sum + activity.weightedAverage, 0) /
-                        activityGroups[group].length
-                    ).toFixed(2)}%)`;
+            if (rangeChart) rangeChart.destroy();
+            rangeChart = new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: labels,
+                    datasets: [
+                        {
+                            label: 'Calificación Baja',
+                            data: lowCounts,
+                            backgroundColor: 'rgba(255, 99, 132, 0.2)',
+                            borderColor: 'rgba(255, 99, 132, 1)',
+                            borderWidth: 1,
+                        },
+                        {
+                            label: 'Calificación Alta',
+                            data: highCounts,
+                            backgroundColor: 'rgba(75, 192, 192, 0.2)',
+                            borderColor: 'rgba(75, 192, 192, 1)',
+                            borderWidth: 1,
+                        },
+                    ],
+                },
+                options: {
+                    responsive: true,
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            //Set max value to the highest count
+                            max: estudiantes
 
-                const table = document.createElement('table');
-                table.innerHTML = `
-                    <thead>
-                        <tr>
-                            <th>Nombre de la Actividad</th>
-                            <th>Puntos Máximos</th>
-                            <th>Promedio Ponderado (%)</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        ${activityGroups[group].map(activity => `
-                            <tr>
-                                <td>${activity.assignmentName}</td>
-                                <td>${activity.pointsPossible}</td>
-                                <td>${activity.weightedAverage.toFixed(2)}</td>
-                            </tr>
-                        `).join('')}
-                    </tbody>
-                `;
-
-                details.appendChild(summary);
-                details.appendChild(table);
-                activityGroupsContainer.appendChild(details);
+                        },
+                    },
+                },
             });
         };
 
-        // Inicializar funciones
-        renderAveragesChart();
-        renderActivityGroups();
+        const updateRangeChart = () => {
+            console.log("Actualizando gráfico de rango...");
+            renderRangeChart();
+        };
+
+        const handleViewChange = () => {
+            const selectedView = document.getElementById('viewSelect').value;
+            document.getElementById('averagesView').style.display = selectedView === 'averages' ? 'block' : 'none';
+            document.getElementById('rangeView').style.display = selectedView === 'range' ? 'block' : 'none';
+
+            if (selectedView === 'averages') {
+                renderAveragesChart();
+            } else if (selectedView === 'range') {
+                renderRangeChart();
+            }
+        };
+
+        // Inicialización
+        document.addEventListener('DOMContentLoaded', () => {
+            renderAveragesChart();
+        });
     </script>
 </body>
 </html>
