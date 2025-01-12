@@ -96,6 +96,22 @@
   },
   {
     "ContainingType": "CoursesController",
+    "Method": "GetAverageByGroupForCourse",
+    "RelativePath": "api/Courses/{courseId}/average-by-group",
+    "HttpMethod": "GET",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "courseId",
+        "Type": "System.Int32",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "CoursesController",
     "Method": "GetStudents",
     "RelativePath": "api/Courses/{courseId}/students",
     "HttpMethod": "GET",
@@ -125,6 +141,22 @@
       },
       {
         "Name": "studentId",
+        "Type": "System.Int32",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "CoursesController",
+    "Method": "GetStudentsAveragesByGroup",
+    "RelativePath": "api/Courses/{courseId}/students/averages",
+    "HttpMethod": "GET",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "courseId",
         "Type": "System.Int32",
         "IsRequired": true
       }

@@ -168,6 +168,7 @@ def task_dashboard():
         notsubmitted_response = requests.get(f"https://localhost:7138/api/Courses/{course_id}/tasks/{task_id}/not-submitted", verify=False)
         not_submitted = notsubmitted_response.json() if notsubmitted_response.status_code == 200 else None
 
+
     except Exception as e:
         print(f"Error al obtener datos de las APIs: {e}")
 
@@ -214,17 +215,29 @@ def course_dashboard():
         # Obtener el número de estudiantes
         students_response = requests.get(f"https://localhost:7138/api/Courses/{course_id}/students", verify=False)
         student_number = len(students_response.json() if students_response.status_code == 200 else [])
+        student_grades_averages = requests.get(f"https://localhost:7138/api/Courses/{course_id}/students/averages", verify=False)
+        student_grades_averages = student_grades_averages.json() if student_grades_averages.status_code == 200 else []
+        average_by_group = requests.get(f"https://localhost:7138/api/Courses/{course_id}/average-by-group", verify=False)
+        average_by_group = average_by_group.json() if average_by_group.status_code == 200 else []
+        student_list = requests.get(f"https://localhost:7138/api/Courses/{course_id}/students", verify=False)
+        student_list = student_list.json() if student_list.status_code == 200 else None
 
     except Exception as e:
-        print(f"Error al obtener datos de las APIs: {e}")
+        print(f"Course Dashboard Error al obtener datos de las APIs: {e}")
+        print(student_list_response)
+        print(student_list)
         return "Error al comunicarse con el backend", 500
 
     return render_template(
         'course_dashboard.html',
+        student_list = student_list,
         course_id=course_id,
         averages_data=averages_data,
         calificaciones=calificaciones,
-        student_number=student_number
+        student_number=student_number,
+        student_averages = student_grades_averages,
+        average_by_group = average_by_group
+        
     )
 
 

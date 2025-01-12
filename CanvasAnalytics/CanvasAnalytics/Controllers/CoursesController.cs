@@ -548,6 +548,163 @@ public class CoursesController : ControllerBase
         }
     }
 
+    [HttpGet("{courseId}/students/averages")]
+    public async Task<IActionResult> GetStudentsAveragesByGroup(int courseId)
+    {
+        try
+        {
+            Console.WriteLine($"Obteniendo promedios para todos los estudiantes en el curso {courseId}");
+
+            // Obtener las actividades del curso
+            var assignments = await _canvasApiService.GetCourseAssignmentsAsync(courseId);
+
+            // Obtener los grupos de asignación del curso
+            var assignmentGroups = await _canvasApiService.GetAssignmentGroupsAsync(courseId);
+            Console.WriteLine($"Número de grupos de asignación obtenidos: {assignmentGroups.Count}");
+
+            // Obtener la lista de estudiantes del curso
+            var students = await _canvasApiService.GetStudentsAsync(courseId);
+
+            // Crear un listado para almacenar los resultados
+            var studentAverages = new List<object>();
+
+            foreach (var student in students)
+            {
+                var groupGrades = assignmentGroups.ToDictionary(
+                    group => group.Name,
+                    group => new { TotalScore = 0.0, Count = 0 }
+                );
+
+                double totalScore = 0.0;
+                int totalAssignments = 0;
+
+                foreach (var assignment in assignments)
+                {
+                    // Obtener las entregas del estudiante para la actividad
+                    var submissions = await _canvasApiService.GetSubmissionsAsync(courseId, assignment.Id);
+                    var studentSubmission = submissions.FirstOrDefault(s => s.UserId == student.Id);
+
+                    // Si no entregó, asignar 0; si entregó, usar la calificación
+                    var grade = studentSubmission != null && studentSubmission.Score.HasValue
+                        ? studentSubmission.Score.Value
+                        : 0.0;
+
+                    // Calcular la calificación ponderada
+                    var weightedGrade = assignment.PointsPossible > 0
+                        ? (grade / assignment.PointsPossible) * 100
+                        : 0.0;
+
+                    // Acumular en el total general
+                    totalScore += weightedGrade;
+                    totalAssignments++;
+
+                    // Obtener el nombre del grupo al que pertenece la actividad
+                    var assignmentGroup = assignmentGroups.FirstOrDefault(g => g.Id == assignment.AssignmentGroupId);
+                    var groupName = assignmentGroup?.Name ?? "Sin grupo";
+
+                    // Acumular calificaciones en el grupo correspondiente
+                    if (groupGrades.ContainsKey(groupName))
+                    {
+                        groupGrades[groupName] = new
+                        {
+                            TotalScore = groupGrades[groupName].TotalScore + weightedGrade,
+                            Count = groupGrades[groupName].Count + 1
+                        };
+                    }
+                }
+
+                // Calcular los promedios por grupo para el estudiante
+                var averagesByGroup = groupGrades.ToDictionary(
+                    g => g.Key,
+                    g => g.Value.Count > 0 ? g.Value.TotalScore / g.Value.Count : 0.0
+                );
+
+                // Calcular el promedio general
+                var overallAverage = totalAssignments > 0 ? totalScore / totalAssignments : 0.0;
+
+                studentAverages.Add(new
+                {
+                    StudentId = student.Id,
+                    StudentName = student.Name,
+                    AveragesByGroup = averagesByGroup,
+                    OverallAverage = overallAverage
+                });
+            }
+
+            return Ok(studentAverages);
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error al obtener los promedios de los estudiantes: {ex.Message}");
+            return StatusCode(500, new { error = "Error al obtener los promedios de los estudiantes", details = ex.Message });
+        }
+    }
+
+    [HttpGet("{courseId}/average-by-group")]
+    public async Task<IActionResult> GetAverageByGroupForCourse(int courseId)
+    {
+        try
+        {
+            Console.WriteLine($"Calculando promedio por grupo de actividades para el curso {courseId}");
+
+            // Obtener las actividades del curso
+            var assignments = await _canvasApiService.GetCourseAssignmentsAsync(courseId);
+
+            // Obtener los grupos de asignación del curso
+            var assignmentGroups = await _canvasApiService.GetAssignmentGroupsAsync(courseId);
+            Console.WriteLine($"Número de grupos de asignación obtenidos: {assignmentGroups.Count}");
+
+            // Inicializar acumuladores para los promedios por grupo
+            var groupAverages = assignmentGroups.ToDictionary(
+                group => group.Name,
+                group => new { TotalWeightedScore = 0.0, TotalAssignments = 0 }
+            );
+
+            foreach (var assignment in assignments)
+            {
+                // Obtener el grupo al que pertenece la actividad
+                var assignmentGroup = assignmentGroups.FirstOrDefault(g => g.Id == assignment.AssignmentGroupId);
+                var groupName = assignmentGroup?.Name ?? "Sin grupo";
+
+                // Obtener todas las entregas de la actividad
+                var submissions = await _canvasApiService.GetSubmissionsAsync(courseId, assignment.Id);
+
+                foreach (var submission in submissions)
+                {
+                    // Calcular la calificación ponderada
+                    var grade = submission.Score.HasValue ? submission.Score.Value : 0.0;
+                    var weightedGrade = assignment.PointsPossible > 0
+                        ? (grade / assignment.PointsPossible) * 100
+                        : 0.0;
+
+                    // Acumular los valores en el grupo correspondiente
+                    if (groupAverages.ContainsKey(groupName))
+                    {
+                        groupAverages[groupName] = new
+                        {
+                            TotalWeightedScore = groupAverages[groupName].TotalWeightedScore + weightedGrade,
+                            TotalAssignments = groupAverages[groupName].TotalAssignments + 1
+                        };
+                    }
+                }
+            }
+
+            // Calcular los promedios finales por grupo
+            var result = groupAverages.ToDictionary(
+                g => g.Key,
+                g => g.Value.TotalAssignments > 0 ? g.Value.TotalWeightedScore / g.Value.TotalAssignments : 0.0
+            );
+
+            return Ok(result);
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error al calcular los promedios por grupo de actividades: {ex.Message}");
+            return StatusCode(500, new { error = "Error al calcular los promedios por grupo", details = ex.Message });
+        }
+    }
+
+
     [HttpGet("users/{userId}/name")]
     public async Task<IActionResult> GetUserName(int userId)
     {
