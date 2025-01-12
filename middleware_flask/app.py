@@ -35,6 +35,13 @@ def lti_launch():
                 task = task_summary_response.json() if task_summary_response.status_code == 200 else {}
                 tasks_summary.append(task)
             
+            ## Itera sobre pending task y task_summary y añadele el assignmentID a cada elemento de task_summary
+
+            for task, summary in zip(pending_tasks, tasks_summary):
+                summary['assignmentId'] = task['assignmentId']
+            
+
+            
 
             return render_template(
                 'student_view.html',
