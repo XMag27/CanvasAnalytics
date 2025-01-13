@@ -460,6 +460,8 @@
         const submissionSummary = {{ submission_summary | tojson }};
         const analyticsData = {{ grades_data | tojson }};
         const NotSubmitted = {{ not_submitted | tojson }};
+        const total_entregas = submissionSummary.notSubmitted + submissionSummary.submitted;
+        console.log("Total de entregas posibles:", total_entregas);
         let lineChart, barChart, rangeBarChart;
 
         const renderGeneralCharts = () => {
@@ -467,52 +469,92 @@
             const lineCtx = document.getElementById('lineChart').getContext('2d');
             if (lineChart) lineChart.destroy();
             lineChart = new Chart(lineCtx, {
-                type: 'line',
-                data: {
-                    labels: histogramData.map(entry => entry.date),
-                    datasets: [{
-                        label: 'Entregas por Fecha',
-                        data: histogramData.map(entry => entry.count),
-                        fill: false,
-                        borderColor: 'rgba(75, 192, 192, 1)',
-                        tension: 0.1
-                    }]
-                },
-                options: {
-                    responsive: true,
-                    scales: {
-                        y: {
-                            beginAtZero: true,
-                            max: submissionSummary.total
+            type: 'line',
+            data: {
+                labels: histogramData.map(entry => entry.date),
+                datasets: [{
+                    label: 'Entregas por Fecha',
+                    data: histogramData.map(entry => entry.count),
+                    fill: false,
+                    borderColor: 'rgba(75, 192, 192, 1)',
+                    tension: 0.1
+                }]
+            },
+            options: {
+                responsive: true,
+                scales: {
+                    x: {
+                        title: {
+                            display: true,
+                            text: 'Fechas' // Título del eje X
+                        }
+                    },
+                    y: {
+                        beginAtZero: true,
+                        max: total_entregas,
+                        title: {
+                            display: true,
+                            text: 'Cantidad de Entregas' // Título del eje Y
                         }
                     }
+                },
+                plugins: {
+                    legend: {
+                        display: true,
+                        position: 'top'
+                    },
+                    tooltip: {
+                        enabled: true
+                    }
                 }
-            });
+            }
+        });
+
 
             const barCtx = document.getElementById('barChart').getContext('2d');
             if (barChart) barChart.destroy();
             barChart = new Chart(barCtx, {
-                type: 'bar',
-                data: {
-                    labels: ['Entregados', 'No Entregados'],
-                    datasets: [{
-                        label: 'Resumen de Entregas',
-                        data: [submissionSummary.submitted, submissionSummary.notSubmitted],
-                        backgroundColor: ['rgba(75, 192, 192, 0.2)', 'rgba(255, 99, 132, 0.2)'],
-                        borderColor: ['rgba(75, 192, 192, 1)', 'rgba(255, 99, 132, 1)'],
-                        borderWidth: 1
-                    }]
-                },
-                options: {
-                    responsive: true,
-                    scales: {
-                        y: {
-                            beginAtZero: true,
-                            max: submissionSummary.total
+            type: 'bar',
+            data: {
+                labels: ['Entregados', 'No Entregados'],
+                datasets: [{
+                    label: 'Resumen de Entregas',
+                    data: [submissionSummary.submitted, submissionSummary.notSubmitted],
+                    backgroundColor: ['rgba(75, 192, 192, 0.2)', 'rgba(255, 99, 132, 0.2)'],
+                    borderColor: ['rgba(75, 192, 192, 1)', 'rgba(255, 99, 132, 1)'],
+                    borderWidth: 1
+                }]
+            },
+            options: {
+                responsive: true,
+                scales: {
+                    x: {
+                        title: {
+                            display: true,
+                            text: 'Estado de Entrega' // Título del eje X
+                        }
+                    },
+                    y: {
+                        beginAtZero: true,
+                        max: total_entregas,
+                        title: {
+                            display: true,
+                            text: 'Cantidad de Estudiantes' // Título del eje Y
                         }
                     }
+                },
+                plugins: {
+                    legend: {
+                        display: true,
+                        position: 'top'
+                    },
+                    tooltip: {
+                        enabled: true
+                    }
                 }
-            });
+            }
+        });
+
         };
 
         const updateRangeChartAndLists = () => {
@@ -530,6 +572,7 @@
             // Actualizar gráfico de barras
             const rangeBarCtx = document.getElementById('rangeBarChart').getContext('2d');
             if (rangeBarChart) rangeBarChart.destroy();
+
             rangeBarChart = new Chart(rangeBarCtx, {
                 type: 'bar',
                 data: {
@@ -545,9 +588,28 @@
                 options: {
                     responsive: true,
                     scales: {
+                        x: {
+                            title: {
+                                display: true,
+                                text: 'Rangos de Calificación' // Título del eje X
+                            }
+                        },
                         y: {
                             beginAtZero: true,
-                            max: analyticsData.length
+                            max: analyticsData.length,
+                            title: {
+                                display: true,
+                                text: 'Cantidad de Estudiantes' // Título del eje Y
+                            }
+                        }
+                    },
+                    plugins: {
+                        legend: {
+                            display: true,
+                            position: 'top'
+                        },
+                        tooltip: {
+                            enabled: true
                         }
                     }
                 }

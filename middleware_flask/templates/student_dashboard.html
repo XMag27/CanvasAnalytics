@@ -69,6 +69,21 @@
         th {
             background-color: #f4f4f4;
         }
+        .note-box {
+            margin-top: 20px;
+            display: inline-block;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            background-color: #f9f9f9;
+            font-size: 12px;
+            color: #666;
+        }
+
+        .note-box strong {
+            font-weight: bold;
+            color: #333;
+        }
     </style>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </head>
@@ -80,6 +95,12 @@
         <div class="container">
             <h2>Calificaciones por Actividad</h2>
             <canvas id="gradesChart"></canvas>
+            <div class="note-container">
+                <div class="note-box">
+                    <strong>Nota:</strong> Todas las calificaciones están ponderadas sobre 100. <br>
+                    <strong>Nota:</strong> Los colores en este gráfico no representan ningún dato.
+                </div>
+            </div>
         </div>
         <div class="activity-list">
             <h2>Actividades por Categoría</h2>
@@ -117,15 +138,33 @@
                 options: {
                     responsive: true,
                     scales: {
+                        x: {
+                            title: {
+                                display: true,
+                                text: 'Actividades' // Título del eje X
+                            }
+                        },
                         y: {
                             beginAtZero: true,
-                            max: 100
+                            max: 100,
+                            title: {
+                                display: true,
+                                text: 'Calificaciones (%)' // Título del eje Y
+                            }
+                        }
+                    },
+                    plugins: {
+                        legend: {
+                            display: true,
+                            position: 'top'
+                        },
+                        tooltip: {
+                            enabled: true
                         }
                     }
                 }
             });
         };
-
         // Agrupar actividades por categoría
         const groupActivitiesByCategory = (activities) => {
             const grouped = {};

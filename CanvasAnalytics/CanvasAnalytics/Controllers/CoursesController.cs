@@ -572,11 +572,11 @@ public class CoursesController : ControllerBase
             {
                 var groupGrades = assignmentGroups.ToDictionary(
                     group => group.Name,
-                    group => new { TotalScore = 0.0, Count = 0 }
+                    group => new { TotalScore = 0.0, TotalPoints = 0.0 }
                 );
 
                 double totalScore = 0.0;
-                int totalAssignments = 0;
+                double totalPoints = 0.0;
 
                 foreach (var assignment in assignments)
                 {
@@ -589,14 +589,9 @@ public class CoursesController : ControllerBase
                         ? studentSubmission.Score.Value
                         : 0.0;
 
-                    // Calcular la calificación ponderada
-                    var weightedGrade = assignment.PointsPossible > 0
-                        ? (grade / assignment.PointsPossible) * 100
-                        : 0.0;
-
-                    // Acumular en el total general
-                    totalScore += weightedGrade;
-                    totalAssignments++;
+                    // Acumular los puntos posibles y los puntos obtenidos
+                    totalScore += grade;
+                    totalPoints += assignment.PointsPossible;
 
                     // Obtener el nombre del grupo al que pertenece la actividad
                     var assignmentGroup = assignmentGroups.FirstOrDefault(g => g.Id == assignment.AssignmentGroupId);
@@ -607,8 +602,8 @@ public class CoursesController : ControllerBase
                     {
                         groupGrades[groupName] = new
                         {
-                            TotalScore = groupGrades[groupName].TotalScore + weightedGrade,
-                            Count = groupGrades[groupName].Count + 1
+                            TotalScore = groupGrades[groupName].TotalScore + grade,
+                            TotalPoints = groupGrades[groupName].TotalPoints + assignment.PointsPossible
                         };
                     }
                 }
@@ -616,11 +611,11 @@ public class CoursesController : ControllerBase
                 // Calcular los promedios por grupo para el estudiante
                 var averagesByGroup = groupGrades.ToDictionary(
                     g => g.Key,
-                    g => g.Value.Count > 0 ? g.Value.TotalScore / g.Value.Count : 0.0
+                    g => g.Value.TotalPoints > 0 ? (g.Value.TotalScore / g.Value.TotalPoints) * 100 : 0.0
                 );
 
                 // Calcular el promedio general
-                var overallAverage = totalAssignments > 0 ? totalScore / totalAssignments : 0.0;
+                var overallAverage = totalPoints > 0 ? (totalScore / totalPoints) * 100 : 0.0;
 
                 studentAverages.Add(new
                 {
@@ -639,6 +634,7 @@ public class CoursesController : ControllerBase
             return StatusCode(500, new { error = "Error al obtener los promedios de los estudiantes", details = ex.Message });
         }
     }
+
 
     [HttpGet("{courseId}/average-by-group")]
     public async Task<IActionResult> GetAverageByGroupForCourse(int courseId)

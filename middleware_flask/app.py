@@ -157,6 +157,9 @@ def task_dashboard():
         histogram_response = requests.get(f"https://localhost:7138/api/Courses/{course_id}/tasks/{task_id}/submission-histogram", verify=False)
         histogram_data = histogram_response.json() if histogram_response.status_code == 200 else None
 
+        #Numero de estudiantes:
+        students_response = requests.get(f"https://localhost:7138/api/Courses/{course_id}/students", verify=False)
+        student_number = len(students_response.json() if students_response.status_code == 200 else [])
         # Consulta al API para el resumen
         summary_response = requests.get(f"https://localhost:7138/api/Courses/{course_id}/tasks/{task_id}/submission-summary", verify=False)
         submission_summary = summary_response.json() if summary_response.status_code == 200 else None
@@ -179,7 +182,8 @@ def task_dashboard():
         histogram_data=histogram_data,
         submission_summary=submission_summary,
         grades_data=grades_data,
-        not_submitted=not_submitted
+        not_submitted=not_submitted,
+        student_number=student_number,
     )
 
 @app.route('/teacher/course-dashboard')
