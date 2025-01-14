@@ -101,6 +101,38 @@
   },
   {
     "ContainingType": "CoursesController",
+    "Method": "GetFullAssignmentAnalytics",
+    "RelativePath": "api/Courses/{courseId}/assignments/full-analytics",
+    "HttpMethod": "GET",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "courseId",
+        "Type": "System.Int32",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "CoursesController",
+    "Method": "ObtenerCalificacionesCurso",
+    "RelativePath": "api/Courses/{courseId}/assignments/grades",
+    "HttpMethod": "GET",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "courseId",
+        "Type": "System.Int32",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "CoursesController",
     "Method": "GetAssignmentsGroupedByGroup",
     "RelativePath": "api/Courses/{courseId}/assignments/grouped",
     "HttpMethod": "GET",

@@ -212,23 +212,8 @@ def course_dashboard():
         averages_data = averages_response.json() if averages_response.status_code == 200 else []
 
         # Función para obtener las calificaciones de una tarea
-        def fetch_grades(task):
-            try:
-                task_id = task['assignmentId']
-                task_name = task['assignmentName']
-                grades_response = requests.get(
-                    f"https://localhost:7138/api/Courses/{course_id}/assignments/{task_id}/analytics",
-                    verify=False
-                )
-                grades_data = grades_response.json() if grades_response.status_code == 200 else []
-                return {'id_tarea': task_id, 'nombre_tarea': task_name, 'calificaciones': grades_data}
-            except Exception as e:
-                print(f"Error al obtener calificaciones para la tarea {task['assignmentId']}: {e}")
-                return {'id_tarea': task['assignmentId'], 'nombre_tarea': task['assignmentName'], 'calificaciones': []}
-
-        # Paralelizar las solicitudes de calificaciones
-        with ThreadPoolExecutor() as executor:
-            calificaciones = list(executor.map(fetch_grades, averages_data))
+        calificaciones_response = requests.get(f"https://localhost:7138/api/Courses/{course_id}/assignments/full-analytics", verify=False)
+        calificaciones = calificaciones_response.json() if calificaciones_response.status_code == 200 else []
 
         # Obtener el número de estudiantes
         students_response = requests.get(f"https://localhost:7138/api/Courses/{course_id}/students", verify=False)

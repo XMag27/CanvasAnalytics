@@ -272,6 +272,8 @@ namespace CanvasAnalytics.Services
         {
             var submissions = await GetSubmissionsAsync(courseId, assignmentId);
 
+            
+
             if (!submissions.Any()) return 0.0;
 
             var completed = submissions.Count(s => s.WorkflowState != "unsubmitted");

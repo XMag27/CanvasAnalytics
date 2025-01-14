@@ -11,6 +11,7 @@ builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 builder.Services.Configure<CanvasApiConfig>(builder.Configuration.GetSection("CanvasApi"));
 builder.Services.AddHttpClient<CanvasApiService>();
+builder.Services.AddHttpClient();
 builder.Services.AddCors(options =>
 {
     options.AddPolicy("AllowAll", policy =>

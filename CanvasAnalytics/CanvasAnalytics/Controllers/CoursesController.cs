@@ -11,10 +11,13 @@ using System.Net.Http;
 public class CoursesController : ControllerBase
 {
     private readonly CanvasApiService _canvasApiService;
+    private readonly HttpClient _httpClient;
 
-    public CoursesController(CanvasApiService canvasApiService)
+    public CoursesController(CanvasApiService canvasApiService, HttpClient httpClient)
     {
         _canvasApiService = canvasApiService;
+        _httpClient = httpClient;
+        _httpClient.BaseAddress = new Uri("http://canvas.docker/api/v1/");
     }
 
     [HttpGet]
@@ -42,7 +45,32 @@ public class CoursesController : ControllerBase
             });
         }
     }
+    [HttpGet("{courseId}/assignments/grades")]
+    public async Task<IActionResult> ObtenerCalificacionesCurso(int courseId)
+    {
+        try
+        {
+            var url = $"courses/{courseId}/assignments";
+            var response = await _httpClient.GetAsync(url);
 
+            if (!response.IsSuccessStatusCode)
+            {
+                var errorContent = await response.Content.ReadAsStringAsync();
+                Console.WriteLine($"Error en la respuesta: {response.StatusCode}, Contenido: {errorContent}");
+                return StatusCode((int)response.StatusCode, "Error al obtener las tareas.");
+            }
+
+            var jsonResponse = await response.Content.ReadAsStringAsync();
+            var assignments = JsonConvert.DeserializeObject<List<Assignment>>(jsonResponse);
+
+            return Ok(assignments);
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error al procesar la solicitud: {ex.Message}");
+            return StatusCode(500, "Error interno del servidor.");
+        }
+    }
     [HttpGet("{courseId}")]
     public async Task<IActionResult> GetCourseById(int courseId)
     {
@@ -417,6 +445,71 @@ public class CoursesController : ControllerBase
             });
         }
     }
+
+    [HttpGet("{courseId}/assignments/full-analytics")]
+    public async Task<IActionResult> GetFullAssignmentAnalytics(int courseId)
+    {
+        try
+        {
+            Console.WriteLine($"Obteniendo datos completos de analítica para el curso {courseId}");
+
+            // Obtener las asignaciones
+            var assignments = await _canvasApiService.GetCourseAssignmentsAsync(courseId);
+
+            // Diccionario para cachear los nombres de los usuarios
+            var userCache = new Dictionary<int, string>();
+
+            // Lista final de resultados
+            var result = new List<object>();
+
+            foreach (var assignment in assignments)
+            {
+                Console.WriteLine($"Procesando asignación: {assignment.Name} (ID: {assignment.Id})");
+
+                // Obtener entregas para la asignación
+                var submissions = await _canvasApiService.GetSubmissionsAsync(courseId, assignment.Id);
+
+                // Procesar las calificaciones
+                var calificaciones = submissions.Where(s => s.Score.HasValue).Select(async submission =>
+                {
+                    // Obtener el nombre del usuario desde el caché o el API
+                    if (!userCache.TryGetValue(submission.UserId, out var userName))
+                    {
+                        var user = await _canvasApiService.GetUserAsync(submission.UserId);
+                        userName = user.Name;
+                        userCache[submission.UserId] = userName;
+                    }
+
+                    return new
+                    {
+                        submissionId = submission.Id,
+                        userId = submission.UserId,
+                        userName = userName,
+                        rawScore = submission.Score,
+                        pointsPossible = assignment.PointsPossible,
+                        weightedScore = (submission.Score.Value / assignment.PointsPossible) * 100
+                    };
+                });
+
+                // Añadir los resultados al objeto final
+                result.Add(new
+                {
+                    id_tarea = assignment.Id,
+                    nombre_tarea = assignment.Name,
+                    calificaciones = await Task.WhenAll(calificaciones) // Resolver tareas paralelas
+                });
+            }
+
+            Console.WriteLine("Datos completos de analítica generados exitosamente.");
+            return Ok(result);
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error al generar la analítica completa: {ex.Message}");
+            return StatusCode(500, new { error = "Error al generar la analítica completa", details = ex.Message });
+        }
+    }
+
     [HttpPost("send-message")]
     public async Task<IActionResult> SendMessage([FromBody] InstantMessageRequest request)
     {
@@ -580,20 +673,26 @@ public class CoursesController : ControllerBase
         {
             Console.WriteLine($"Obteniendo promedios para todos los estudiantes en el curso {courseId}");
 
-            // Obtener las actividades del curso
+            // Obtener las actividades y los grupos de asignación del curso
             var assignments = await _canvasApiService.GetCourseAssignmentsAsync(courseId);
-
-            // Obtener los grupos de asignación del curso
             var assignmentGroups = await _canvasApiService.GetAssignmentGroupsAsync(courseId);
-            Console.WriteLine($"Número de grupos de asignación obtenidos: {assignmentGroups.Count}");
-
-            // Obtener la lista de estudiantes del curso
             var students = await _canvasApiService.GetStudentsAsync(courseId);
 
-            // Crear un listado para almacenar los resultados
-            var studentAverages = new List<object>();
+            // Prepara un diccionario para grupos de tareas
+            var assignmentGroupMap = assignmentGroups.ToDictionary(g => g.Id, g => g.Name ?? "Sin grupo");
 
-            foreach (var student in students)
+            // Diccionario para almacenar las entregas de cada tarea
+            var allSubmissions = new Dictionary<int, List<Submission>>();
+
+            foreach (var assignment in assignments)
+            {
+                // Obtener todas las entregas para cada tarea y almacenarlas con su ID
+                var submissions = await _canvasApiService.GetSubmissionsAsync(courseId, assignment.Id);
+                allSubmissions[assignment.Id] = submissions.ToList();
+            }
+
+            // Crear un listado para almacenar los resultados
+            var studentAverages = students.Select(student =>
             {
                 var groupGrades = assignmentGroups.ToDictionary(
                     group => group.Name,
@@ -605,24 +704,24 @@ public class CoursesController : ControllerBase
 
                 foreach (var assignment in assignments)
                 {
-                    // Obtener las entregas del estudiante para la actividad
-                    var submissions = await _canvasApiService.GetSubmissionsAsync(courseId, assignment.Id);
+                    if (!allSubmissions.TryGetValue(assignment.Id, out var submissions)) continue;
+
+                    // Filtrar las entregas del estudiante
                     var studentSubmission = submissions.FirstOrDefault(s => s.UserId == student.Id);
 
-                    // Si no entregó, asignar 0; si entregó, usar la calificación
-                    var grade = studentSubmission != null && studentSubmission.Score.HasValue
-                        ? studentSubmission.Score.Value
-                        : 0.0;
+                    // Calcular la calificación obtenida
+                    var grade = studentSubmission?.Score ?? 0.0;
 
                     // Acumular los puntos posibles y los puntos obtenidos
                     totalScore += grade;
                     totalPoints += assignment.PointsPossible;
 
-                    // Obtener el nombre del grupo al que pertenece la actividad
-                    var assignmentGroup = assignmentGroups.FirstOrDefault(g => g.Id == assignment.AssignmentGroupId);
-                    var groupName = assignmentGroup?.Name ?? "Sin grupo";
+                    // Obtener el nombre del grupo de la tarea
+                    var groupName = assignmentGroupMap.ContainsKey(assignment.AssignmentGroupId)
+                        ? assignmentGroupMap[assignment.AssignmentGroupId]
+                        : "Sin grupo";
 
-                    // Acumular calificaciones en el grupo correspondiente
+                    // Actualizar puntajes del grupo
                     if (groupGrades.ContainsKey(groupName))
                     {
                         groupGrades[groupName] = new
@@ -633,7 +732,7 @@ public class CoursesController : ControllerBase
                     }
                 }
 
-                // Calcular los promedios por grupo para el estudiante
+                // Calcular promedios por grupo
                 var averagesByGroup = groupGrades.ToDictionary(
                     g => g.Key,
                     g => g.Value.TotalPoints > 0 ? (g.Value.TotalScore / g.Value.TotalPoints) * 100 : 0.0
@@ -642,14 +741,14 @@ public class CoursesController : ControllerBase
                 // Calcular el promedio general
                 var overallAverage = totalPoints > 0 ? (totalScore / totalPoints) * 100 : 0.0;
 
-                studentAverages.Add(new
+                return new
                 {
                     StudentId = student.Id,
                     StudentName = student.Name,
                     AveragesByGroup = averagesByGroup,
                     OverallAverage = overallAverage
-                });
-            }
+                };
+            }).ToList();
 
             return Ok(studentAverages);
         }
@@ -659,6 +758,7 @@ public class CoursesController : ControllerBase
             return StatusCode(500, new { error = "Error al obtener los promedios de los estudiantes", details = ex.Message });
         }
     }
+
 
 
     [HttpGet("{courseId}/average-by-group")]
