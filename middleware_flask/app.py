@@ -5,8 +5,8 @@ from concurrent.futures import ThreadPoolExecutor
 
 app = Flask(__name__)
 API_BASE_URL = "https://localhost:7138"
-
-
+canvas_url = "http://canvas.docker"
+LTI_URL = "https://valued-swan-apparently.ngrok-free.app"
 # Endpoint de lanzamiento LTI
 @app.route('/lti/launch', methods=['POST'])
 def lti_launch():
@@ -14,7 +14,6 @@ def lti_launch():
     course_id = request.form.get("custom_canvas_course_id")
     roles = request.form.get("roles")
     curso = request.form.get("context_title")
-    canvas_url = "http://canvas.docker"
     # Determinar el rol
     role = "Teacher" if "Instructor" in roles or "Teacher" in roles else "Student"
 
@@ -137,7 +136,9 @@ def student_dashboard():
         'student_dashboard.html',
         student_name_data=student_name_data,
         grades_data=grades_data,
-        student_id=student_id
+        student_id=student_id,
+        lti_url=LTI_URL,
+        courseID = course_id
     )
 
 @app.route('/teacher/task-dashboard')
@@ -160,6 +161,7 @@ def task_dashboard():
         #Numero de estudiantes:
         students_response = requests.get(f"https://localhost:7138/api/Courses/{course_id}/students", verify=False)
         student_number = len(students_response.json() if students_response.status_code == 200 else [])
+        
         # Consulta al API para el resumen
         summary_response = requests.get(f"https://localhost:7138/api/Courses/{course_id}/tasks/{task_id}/submission-summary", verify=False)
         submission_summary = summary_response.json() if summary_response.status_code == 200 else None
@@ -225,6 +227,9 @@ def course_dashboard():
         average_by_group = average_by_group.json() if average_by_group.status_code == 200 else []
         student_list = requests.get(f"https://localhost:7138/api/Courses/{course_id}/students", verify=False)
         student_list = student_list.json() if student_list.status_code == 200 else None
+        task_list = requests.get(f"https://localhost:7138/api/Courses/{course_id}/assignments", verify=False)
+        task_list = task_list.json() if task_list.status_code == 200 else None
+
 
     except Exception as e:
         print(f"Course Dashboard Error al obtener datos de las APIs: {e}")
@@ -240,8 +245,8 @@ def course_dashboard():
         calificaciones=calificaciones,
         student_number=student_number,
         student_averages = student_grades_averages,
-        average_by_group = average_by_group
-        
+        average_by_group = average_by_group,
+        task_list = task_list
     )
 
 

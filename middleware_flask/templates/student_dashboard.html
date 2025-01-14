@@ -79,6 +79,16 @@
             font-size: 12px;
             color: #666;
         }
+        a {
+            text-decoration: none; /* Elimina el subrayado */
+            color: inherit; /* Usa el color del texto circundante */
+            cursor: pointer; /* Muestra el cursor de enlace */
+        }
+
+a:hover {
+    text-decoration: underline; /* Opcional: Agrega subrayado al pasar el mouse */
+    color: #007bff; /* Cambia el color al pasar el mouse, opcional */
+}
 
         .note-box strong {
             font-weight: bold;
@@ -113,7 +123,11 @@
         // Datos pasados desde Flask
         const gradesData = {{ grades_data | tojson }};
         const studentName = "{{ student_name_data['userName'] }}";
+        const lti = {{ lti_url | tojson }};
+        const course_id = {{ courseID }};
 
+        console.log("URL de LTI:", lti);
+        console.log("ID del curso:", course_id);
         console.log("Datos de calificaciones:", gradesData);
         console.log("Nombre del estudiante:", studentName);
 
@@ -180,43 +194,47 @@
 
         // Renderizar actividades agrupadas
         const renderActivityGroups = () => {
-            const activityGroups = groupActivitiesByCategory(gradesData);
-            const activityGroupsContainer = document.getElementById('activityGroups');
+    const activityGroups = groupActivitiesByCategory(gradesData);
+    const activityGroupsContainer = document.getElementById('activityGroups');
 
-            Object.keys(activityGroups).forEach(group => {
-                const details = document.createElement('details');
-                const summary = document.createElement('summary');
-                summary.textContent = `${group} (Promedio: ${
-                    (
-                        activityGroups[group].reduce((sum, activity) => sum + activity.weightedGrade, 0) /
-                        activityGroups[group].length
-                    ).toFixed(2)}%)`;
+    Object.keys(activityGroups).forEach(group => {
+        const details = document.createElement('details');
+        const summary = document.createElement('summary');
+        summary.textContent = `${group} (Promedio: ${
+            (
+                activityGroups[group].reduce((sum, activity) => sum + activity.weightedGrade, 0) /
+                activityGroups[group].length
+            ).toFixed(2)}%)`;
 
-                const table = document.createElement('table');
-                table.innerHTML = `
-                    <thead>
-                        <tr>
-                            <th>Nombre de la Actividad</th>
-                            <th>Nota Obtenida</th>
-                            <th>Nota Ponderada (%100)</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        ${activityGroups[group].map(activity => `
-                            <tr>
-                                <td>${activity.assignmentName}</td>
-                                <td>${activity.grade} / ${activity.maxPoints}</td>
-                                <td>${activity.weightedGrade.toFixed(2)} / 100</td>
-                            </tr>
-                        `).join('')}
-                    </tbody>
-                `;
+        const table = document.createElement('table');
+        table.innerHTML = `
+            <thead>
+                <tr>
+                    <th>Nombre de la Actividad</th>
+                    <th>Nota Obtenida</th>
+                    <th>Nota Ponderada (%100)</th>
+                </tr>
+            </thead>
+            <tbody>
+                ${activityGroups[group].map(activity => `
+                    <tr>
+                        <td>
+                            <a href="${lti}/teacher/task-dashboard?course_id=${course_id}&task_id=${activity.assignmentId}">
+                                ${activity.assignmentName}
+                            </a>
+                        </td>
+                        <td>${activity.grade} / ${activity.maxPoints}</td>
+                        <td>${activity.weightedGrade.toFixed(2)} / 100</td>
+                    </tr>
+                `).join('')}
+            </tbody>
+        `;
 
-                details.appendChild(summary);
-                details.appendChild(table);
-                activityGroupsContainer.appendChild(details);
-            });
-        };
+        details.appendChild(summary);
+        details.appendChild(table);
+        activityGroupsContainer.appendChild(details);
+    });
+};
 
         // Inicializar funciones
         renderGradesChart();

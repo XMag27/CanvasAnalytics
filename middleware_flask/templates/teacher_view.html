@@ -82,6 +82,10 @@
         a.student-link:hover {
             text-decoration: underline; /* Opcional: Subraya el texto al pasar el mouse */
         }
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
     </style>
 </head>
 <body>
@@ -128,20 +132,40 @@
                 {% endfor %}
             </ul>
         </section>
+
+        <div id="loadingIndicator" style="display: none; position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); z-index: 1000; background: rgba(255, 255, 255, 0.9); padding: 20px; border-radius: 8px; text-align: center; box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);">
+            <p style="font-size: 18px; font-weight: bold; color: #333;">Analizando los datos...</p>
+            <div class="spinner" style="margin: 20px auto; border: 4px solid rgba(0, 0, 0, 0.1); border-top: 4px solid #007bff; border-radius: 50%; width: 40px; height: 40px; animation: spin 1s linear infinite;"></div>
+        </div>
     </main>
     <script>
         // Función para redirigir al dashboard de tareas
         function redirectToTaskDashboard(courseId, taskId) {
-            window.location.href = `/teacher/task-dashboard?course_id=${courseId}&task_id=${taskId}`;
+            showLoadingIndicator(); // Mostrar el indicador de carga
+            setTimeout(() => {
+                window.location.href = `/teacher/task-dashboard?course_id=${courseId}&task_id=${taskId}`;
+            }, 100); // Pequeño delay para que el indicador aparezca antes de la redirección
         }
         function redirectToStudentDashboard(courseId, studentId) {
-        // Construye la URL con los parámetros course_id y student_id
-        const url = `/teacher/student-dashboard?course_id=${courseId}&student_id=${studentId}`;
-        window.location.href = url; // Redirige al dashboard del estudiante
+            showLoadingIndicator(); // Mostrar el indicador de carga
+            setTimeout(() => {
+                window.location.href = `/teacher/student-dashboard?course_id=${courseId}&student_id=${studentId}`;
+            }, 100);
         }
         function redirectToCourseDashboard(courseId) {
-            window.location.href = `/teacher/course-dashboard?course_id=${courseId}`;
+            showLoadingIndicator(); // Mostrar el indicador de carga
+            setTimeout(() => {
+                window.location.href = `/teacher/course-dashboard?course_id=${courseId}`;
+            }, 100);
         }
+        function showLoadingIndicator() {
+            document.getElementById('loadingIndicator').style.display = 'block';
+        }
+        function hideLoadingIndicator() {
+            document.getElementById('loadingIndicator').style.display = 'none';
+        }
+
+
     </script>
 </body>
 </html>

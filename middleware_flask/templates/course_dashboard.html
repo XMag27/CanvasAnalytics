@@ -283,6 +283,60 @@
                 width: 70%;
             }
         }
+        .layout-container {
+            display: flex;
+            gap: 20px;
+        }
+
+        .assignment-groups {
+            flex: 1;
+            border-right: 1px solid #ddd;
+            padding-right: 20px;
+        }
+
+        .assignment-groups ul {
+            list-style: none;
+            padding: 0;
+        }
+
+        .assignment-groups .group-item {
+            margin-bottom: 10px;
+        }
+
+        .assignment-groups .group-button {
+            background: #f4f4f4;
+            border: 1px solid #ddd;
+            padding: 10px;
+            width: 100%;
+            text-align: left;
+            cursor: pointer;
+            border-radius: 5px;
+        }
+
+        .assignment-groups .group-button:hover {
+            background: #ddd;
+        }
+
+        .activity-table {
+            flex: 3;
+        }
+
+        .activity-table table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        .activity-table th,
+        .activity-table td {
+            border: 1px solid #ddd;
+            padding: 10px;
+            text-align: left;
+        }
+
+        .activity-table th {
+            background: #f4f4f4;
+            font-weight: bold;
+        }
     </style>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </head>
@@ -306,6 +360,30 @@
             <canvas id="courseAveragesChart"></canvas>
             <div class="note-box">
                 <strong>Nota:</strong> Todas las calificaciones están ponderadas sobre 100.
+            </div>
+            <div id="activityGroupsContainer">
+                <h3>Actividades</h3>
+                <div class="layout-container">
+                    <!-- Opciones a la izquierda -->
+                    <div class="assignment-groups">
+                        <ul id="groupList"></ul>
+                    </div>
+            
+                    <!-- Tabla a la derecha -->
+                    <div class="activity-table">
+                        <table id="activityTable">
+                            <thead>
+                                <tr>
+                                    <th>Nombre de Actividad</th>
+                                    <th>Promedio</th>
+                                    <th>Nota Más Alta</th>
+                                    <th>Nota Más Baja</th>
+                                </tr>
+                            </thead>
+                            <tbody></tbody>
+                        </table>
+                    </div>
+                </div>
             </div>
         </div>
         <!-- Vista de rangos -->
@@ -369,9 +447,28 @@
         const courseAverageByGroup = {{ average_by_group | tojson }};
         const studentList = {{ student_list | tojson }};
         const studentGrades = {{ student_averages | tojson }};
+        const taskList = {{ task_list | tojson }};
         let averagesChart, rangeChart;
         
+        const processScores = (scores) => {
+        return scores.map(task => {
+            const calificaciones = task.calificaciones.map(c => c.rawScore);
+            const promedio = calificaciones.reduce((sum, grade) => sum + grade, 0) / calificaciones.length;
+            const notaAlta = Math.max(...calificaciones);
+            const notaBaja = Math.min(...calificaciones);
 
+            return {
+                id: task.id_tarea,
+                nombre: task.nombre_tarea,
+                promedio: promedio.toFixed(2),
+                notaAlta: notaAlta.toFixed(2),
+                notaBaja: notaBaja.toFixed(2)
+            };
+        });
+        };
+
+        const processedData = processScores(scores);
+        console.log(processedData);
         console.log("Estudiantes:", estudiantes_total);
         console.log("Datos de promedios ponderados:", averagesData);
         console.log("Calificaciones:", scores);
@@ -387,8 +484,8 @@
     const highRange = parseFloat(document.getElementById('highRange').value);
     const highLowRange = parseFloat(document.getElementById('highLowRange').value);
     const upperRange = parseFloat(document.getElementById('upperRange').value);
-
-    console.log("Rangos: Baja:", lowRange, "-", highRange, " | Alta:", highLowRange, "-", upperRange);
+    
+    
 
     // Limpiar contenido previo
     thead.innerHTML = "";
@@ -494,7 +591,62 @@ const calculateOverallAverage = (averagesByGroup, groupArray) => {
 
     return count > 0 ? total / count : 0;
 };
+// Función para agrupar tareas por assignmentGroup
+const groupTasksByGroup = (taskList) => {
+    const groupedTasks = {};
+    taskList.forEach(task => {
+        const group = task.assignmentGroup;
+        if (!groupedTasks[group]) {
+            groupedTasks[group] = [];
+        }
+        groupedTasks[group].push(task);
+    });
+    return groupedTasks;
+};
+// Renderizar los grupos de tareas en la lista de la izquierda
+const renderAssignmentGroups = (taskList) => {
+    const groupList = document.getElementById("groupList");
+    groupList.innerHTML = ""; // Limpiar contenido previo
 
+    const groupedTasks = groupTasksByGroup(taskList);
+
+    // Crear elementos para cada grupo
+    Object.keys(groupedTasks).forEach(group => {
+        const groupItem = document.createElement("li");
+        groupItem.className = "group-item";
+
+        // Botón para mostrar actividades del grupo
+        const button = document.createElement("button");
+        button.textContent = group;
+        button.className = "group-button";
+        button.onclick = () => renderActivityTable(groupedTasks[group]);
+
+        groupItem.appendChild(button);
+        groupList.appendChild(groupItem);
+    });
+};
+
+    // Renderizar la tabla de actividades en la derecha
+    const renderActivityTable = (tasks) => {
+    const tableBody = document.getElementById("activityTable").querySelector("tbody");
+    tableBody.innerHTML = ""; // Limpiar contenido previo
+
+    // Iterar sobre las tareas para mostrar sus estadísticas
+    tasks.forEach(task => {
+        const stats = processedData.find(data => data.id === task.id);
+
+        if (stats) {
+            const row = document.createElement("tr");
+            row.innerHTML = `
+                <td>${task.name}</td>
+                <td>${stats.promedio}</td>
+                <td>${stats.notaAlta}</td>
+                <td>${stats.notaBaja}</td>
+            `;
+            tableBody.appendChild(row);
+        }
+    });
+};
 function redirectToStudentDashboard(courseId, studentId) {
         // Construye la URL con los parámetros course_id y student_id
         const url = `/teacher/student-dashboard?course_id=${courseId}&student_id=${studentId}`;
@@ -696,6 +848,7 @@ document.querySelector('.apply-button').addEventListener('click', updateGradesTa
         // Inicialización
         document.addEventListener('DOMContentLoaded', () => {
             renderAveragesChart();
+            renderAssignmentGroups(taskList);
         });
     </script>
 </body>
