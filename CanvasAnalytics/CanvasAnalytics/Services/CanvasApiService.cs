@@ -287,5 +287,17 @@ namespace CanvasAnalytics.Services
             return JsonConvert.DeserializeObject<List<AssignmentGroup>>(jsonResponse);
         }
 
+        public async Task<Assignment> GetAssignmentByIdAsync(int courseId, int taskId)
+        {
+            var response = await _httpClient.GetAsync($"courses/{courseId}/assignments/{taskId}");
+            if (response.IsSuccessStatusCode)
+            {
+                var content = await response.Content.ReadAsStringAsync();
+                return JsonConvert.DeserializeObject<Assignment>(content);
+            }
+            return null;
+        }
+
+
     }
 }

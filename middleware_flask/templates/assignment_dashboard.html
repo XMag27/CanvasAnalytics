@@ -293,8 +293,8 @@
 </head>
 <body>
     <header>
-        <h1>{{curso}}</h1>
-        <h3>Tarea {{ task_id }}</h3>
+        <h1>{{name}}</h1>
+        <h3>{{ taskName }}</h3>
     </header>
     <main>
         <div class="menu-container">
@@ -455,7 +455,6 @@
         console.log("Datos de submissionSummary:", {{ submission_summary | tojson }});
         console.log("Datos de analyticsData:", {{ grades_data | tojson }});
         console.log("Datos de tareas no entregadas", {{ not_submitted | tojson }});
-
         const histogramData = {{ histogram_data | tojson }};
         const submissionSummary = {{ submission_summary | tojson }};
         const analyticsData = {{ grades_data | tojson }};
@@ -563,11 +562,46 @@
             const highLowRange = parseFloat(document.getElementById('highLowRange').value);
             const upperRange = parseFloat(document.getElementById('upperRange').value);
 
+            // Validar si los rangos son consecutivos
+            if (highRange + 1 !== highLowRange) {
+                alert("Los rangos no son consecutivos. Asegúrate de que no haya huecos entre los rangos definidos.");
+                return;
+            }
+
+            // Limpiar listas al inicio para evitar duplicados
+            const lowGradeList = document.getElementById('lowGradeStudents');
+            const highGradeList = document.getElementById('highGradeStudents');
+            lowGradeList.innerHTML = '';
+            highGradeList.innerHTML = '';
+
             console.log("Actualizando gráficos y listas con rangos:", { lowRange, highRange, highLowRange, upperRange });
 
-            // Filtrar los datos de acuerdo a los rangos ingresados
-            const lowGradeStudents = analyticsData.filter(student => student.weightedScore >= lowRange && student.weightedScore <= highRange);
-            const highGradeStudents = analyticsData.filter(student => student.weightedScore >= highLowRange && student.weightedScore <= upperRange);
+            // Ajustar valores no cubiertos por los rangos
+            const adjustedAnalyticsData = analyticsData.map(student => {
+                const score = student.weightedScore;
+
+                if (score < lowRange) {
+                    student.adjustedRange = "Baja (por debajo de rango)";
+                } else if (score > upperRange) {
+                    student.adjustedRange = "Alta (fuera de rango)";
+                } else if (score >= lowRange && score <= highRange) {
+                    student.adjustedRange = "Baja";
+                } else if (score >= highLowRange && score <= upperRange) {
+                    student.adjustedRange = "Alta";
+                } else {
+                    // Caso intermedio: Calcular la aproximación al rango más cercano
+                    const closestRange = Math.abs(score - highRange) <= Math.abs(score - highLowRange) ? "Baja" : "Alta";
+                    student.adjustedRange = closestRange;
+                }
+
+                return student;
+            });
+
+            console.log("Datos ajustados con rangos:", adjustedAnalyticsData);
+
+            // Filtrar datos según el rango ajustado
+            const lowGradeStudents = adjustedAnalyticsData.filter(student => student.adjustedRange === "Baja");
+            const highGradeStudents = adjustedAnalyticsData.filter(student => student.adjustedRange === "Alta");
 
             // Actualizar gráfico de barras
             const rangeBarCtx = document.getElementById('rangeBarChart').getContext('2d');
@@ -616,17 +650,12 @@
             });
 
             // Actualizar listas de estudiantes
-            const lowGradeList = document.getElementById('lowGradeStudents');
-            const highGradeList = document.getElementById('highGradeStudents');
-
-            lowGradeList.innerHTML = '';
             lowGradeStudents.forEach(student => {
                 const listItem = document.createElement('li');
                 listItem.textContent = `${student.userName} - Calificación: ${student.weightedScore.toFixed(2)}`;
                 lowGradeList.appendChild(listItem);
             });
 
-            highGradeList.innerHTML = '';
             highGradeStudents.forEach(student => {
                 const listItem = document.createElement('li');
                 listItem.textContent = `${student.userName} - Calificación: ${student.weightedScore.toFixed(2)}`;
@@ -635,6 +664,9 @@
 
             console.log("Listas actualizadas:", { lowGradeStudents, highGradeStudents });
         };
+
+
+
 
         const handleViewChange = () => {
             const selectedView = document.getElementById('viewSelect').value;

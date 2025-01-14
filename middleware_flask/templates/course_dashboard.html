@@ -342,7 +342,7 @@
 </head>
 <body>
     <header>
-        <h1>Curso {{ course_id }}</h1>
+        <h1>{{ name }}</h1>
     </header>
     <main>
         <div class="menu-container">
@@ -536,7 +536,7 @@
         // Columna: Promedio general
         const overallCell = document.createElement('td');
         overallCell.textContent = calculateOverallAverage(student.averagesByGroup, groupArray).toFixed(2);
-        overallCell.classList.add(getGradeClass(student.overallAverage, lowRange, highRange, highLowRange, upperRange));
+        overallCell.classList.add(getGradeClass(overallCell.textContent, lowRange, highRange, highLowRange, upperRange));
         row.appendChild(overallCell);
 
         // Columnas: Promedios por grupo

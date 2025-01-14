@@ -64,6 +64,27 @@
   },
   {
     "ContainingType": "CoursesController",
+    "Method": "GetAssignmentName",
+    "RelativePath": "api/Courses/{courseId}/assignments/{taskId}/name",
+    "HttpMethod": "GET",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "courseId",
+        "Type": "System.Int32",
+        "IsRequired": true
+      },
+      {
+        "Name": "taskId",
+        "Type": "System.Int32",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "CoursesController",
     "Method": "GetAssignmentAverages",
     "RelativePath": "api/Courses/{courseId}/assignments/averages",
     "HttpMethod": "GET",

@@ -340,6 +340,31 @@ public class CoursesController : ControllerBase
         }
     }
 
+    [HttpGet("{courseId}/assignments/{taskId}/name")]
+    public async Task<IActionResult> GetAssignmentName(int courseId, int taskId)
+    {
+        try
+        {
+            Console.WriteLine($"Obteniendo nombre de la tarea {taskId} del curso {courseId}");
+
+            // Llamar al servicio para obtener los datos de la tarea
+            var assignment = await _canvasApiService.GetAssignmentByIdAsync(courseId, taskId);
+
+            if (assignment == null)
+            {
+                return NotFound(new { message = $"La tarea con ID {taskId} no fue encontrada en el curso {courseId}" });
+            }
+
+            // Retornar el nombre de la tarea
+            return Ok(new { assignmentName = assignment.Name });
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error al obtener el nombre de la tarea: {ex.Message}");
+            return StatusCode(500, new { error = "Ocurrió un error al obtener el nombre de la tarea", details = ex.Message });
+        }
+    }
+
 
     [HttpGet("{courseId}/assignments/{assignmentId}/analytics")]
     public async Task<IActionResult> GetAssignmentAnalytics(int courseId, int assignmentId)

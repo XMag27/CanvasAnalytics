@@ -173,6 +173,16 @@ def task_dashboard():
         notsubmitted_response = requests.get(f"https://localhost:7138/api/Courses/{course_id}/tasks/{task_id}/not-submitted", verify=False)
         not_submitted = notsubmitted_response.json() if notsubmitted_response.status_code == 200 else None
 
+        nombre_curso = requests.get(f"https://localhost:7138/api/Courses/{course_id}", verify=False)
+        nombre_curso = nombre_curso.json() if nombre_curso.status_code == 200 else None
+        nombre_curso = nombre_curso['name']
+
+        tarea = requests.get(f"https://localhost:7138/api/Courses/{course_id}/assignments/{task_id}/name", verify=False)
+        tarea_name = tarea.json() if tarea.status_code == 200 else None
+        nombre_tarea = tarea_name['assignmentName']
+        
+
+
 
     except Exception as e:
         print(f"Error al obtener datos de las APIs: {e}")
@@ -186,6 +196,8 @@ def task_dashboard():
         grades_data=grades_data,
         not_submitted=not_submitted,
         student_number=student_number,
+        name = nombre_curso,
+        taskName = nombre_tarea
     )
 
 @app.route('/teacher/course-dashboard')
@@ -229,12 +241,12 @@ def course_dashboard():
         student_list = student_list.json() if student_list.status_code == 200 else None
         task_list = requests.get(f"https://localhost:7138/api/Courses/{course_id}/assignments", verify=False)
         task_list = task_list.json() if task_list.status_code == 200 else None
-
+        nombre_curso = requests.get(f"https://localhost:7138/api/Courses/{course_id}", verify=False)
+        nombre_curso = nombre_curso.json() if nombre_curso.status_code == 200 else None
+        nombre_curso = nombre_curso['name']
 
     except Exception as e:
         print(f"Course Dashboard Error al obtener datos de las APIs: {e}")
-        print(student_list_response)
-        print(student_list)
         return "Error al comunicarse con el backend", 500
 
     return render_template(
@@ -246,7 +258,8 @@ def course_dashboard():
         student_number=student_number,
         student_averages = student_grades_averages,
         average_by_group = average_by_group,
-        task_list = task_list
+        task_list = task_list,
+        name = nombre_curso
     )
 
 
