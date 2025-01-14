@@ -475,107 +475,121 @@
         console.log("Promedios:", studentGrades);
         console.log("Promedios por grupo:", courseAverageByGroup);
         const renderGradesTable = () => {
-    const table = document.getElementById('gradesTable');
-    const thead = table.querySelector('thead');
-    const tbody = table.querySelector('tbody');
+            const table = document.getElementById('gradesTable');
+            const thead = table.querySelector('thead');
+            const tbody = table.querySelector('tbody');
 
-    // Obtener valores de rango
-    const lowRange = parseFloat(document.getElementById('lowRange').value);
-    const highRange = parseFloat(document.getElementById('highRange').value);
-    const highLowRange = parseFloat(document.getElementById('highLowRange').value);
-    const upperRange = parseFloat(document.getElementById('upperRange').value);
-    
-    
+            // Obtener valores de rango
+            const lowRange = parseFloat(document.getElementById('lowRange').value);
+            const highRange = parseFloat(document.getElementById('highRange').value);
+            const highLowRange = parseFloat(document.getElementById('highLowRange').value);
+            const upperRange = parseFloat(document.getElementById('upperRange').value);
 
-    // Limpiar contenido previo
-    thead.innerHTML = "";
-    tbody.innerHTML = "";
-
-    // Obtener nombres únicos de grupos de actividad
-    const groupNames = new Set();
-    studentGrades.forEach(student => {
-        Object.keys(student.averagesByGroup).forEach(group => groupNames.add(group));
-    });
-    const groupArray = Array.from(groupNames);
-
-    // Crear encabezado dinámico para la tabla
-    const headerRow = document.createElement('tr');
-    const nameHeader = document.createElement('th');
-    nameHeader.textContent = "Nombre";
-    headerRow.appendChild(nameHeader);
-
-    const overallHeader = document.createElement('th');
-    overallHeader.textContent = "Promedio General";
-    headerRow.appendChild(overallHeader);
-
-    groupArray.forEach(group => {
-        const groupHeader = document.createElement('th');
-        groupHeader.textContent = group;
-        headerRow.appendChild(groupHeader);
-    });
-
-    thead.appendChild(headerRow);
-
-    // Crear filas para estudiantes
-    studentGrades.forEach(student => {
-        const row = document.createElement('tr');
-
-        // Columna: Nombre del estudiante
-        const nameCell = document.createElement('td');
-        const nameLink = document.createElement('a');
-        nameLink.textContent = student.studentName;
-        nameLink.href = "#"; // Evitar comportamiento predeterminado
-        nameLink.addEventListener('click', (e) => {
-            e.preventDefault(); // Evitar que el enlace navegue directamente
-            redirectToStudentDashboard({{ course_id }}, student.studentId); // Llama a la función con los parámetros correspondientes
-            console.log("Redirigiendo al dashboard del estudiante", student.studentId);
-        });
-        nameCell.appendChild(nameLink);
-        row.appendChild(nameCell);
-
-        // Columna: Promedio general
-        const overallCell = document.createElement('td');
-        overallCell.textContent = calculateOverallAverage(student.averagesByGroup, groupArray).toFixed(2);
-        overallCell.classList.add(getGradeClass(overallCell.textContent, lowRange, highRange, highLowRange, upperRange));
-        row.appendChild(overallCell);
-
-        // Columnas: Promedios por grupo
-        groupArray.forEach(group => {
-            const groupCell = document.createElement('td');
-            const groupAverage = student.averagesByGroup[group];
-            if (groupAverage !== undefined) {
-                groupCell.textContent = groupAverage.toFixed(2);
-                groupCell.classList.add(getGradeClass(groupAverage, lowRange, highRange, highLowRange, upperRange));
-            } else {
-                groupCell.textContent = "-";
+            // Validar que los rangos sean consecutivos
+            if (highRange + 1 !== highLowRange) {
+                console.log("Los rangos no son consecutivos. No se actualizará la tabla.");
+                return; // Detener si los rangos no son válidos
             }
-            row.appendChild(groupCell);
-        });
 
-        tbody.appendChild(row);
-    });
+            console.log("Actualizando tabla con rangos válidos:", {
+                lowRange,
+                highRange,
+                highLowRange,
+                upperRange,
+            });
 
-    // Añadir fila para el promedio general del curso
-    const averageRow = document.createElement('tr');
-    averageRow.classList.add('course-average-row');
+            // Limpiar contenido previo
+            thead.innerHTML = "";
+            tbody.innerHTML = "";
 
-    const averageNameCell = document.createElement('td');
-    averageNameCell.textContent = 'Promedio del Curso';
-    averageRow.appendChild(averageNameCell);
+            // Obtener nombres únicos de grupos de actividad
+            const groupNames = new Set();
+            studentGrades.forEach(student => {
+                Object.keys(student.averagesByGroup).forEach(group => groupNames.add(group));
+            });
+            const groupArray = Array.from(groupNames);
 
-    const overallAverageCell = document.createElement('td');
-    overallAverageCell.textContent = calculateCourseOverallAverage(studentGrades).toFixed(2);
-    averageRow.appendChild(overallAverageCell);
+            // Crear encabezado dinámico para la tabla
+            const headerRow = document.createElement('tr');
+            const nameHeader = document.createElement('th');
+            nameHeader.textContent = "Nombre";
+            headerRow.appendChild(nameHeader);
 
-    groupArray.forEach(group => {
-        const groupCell = document.createElement('td');
-        const groupAverage = calculateGroupAverage(studentGrades, group);
-        groupCell.textContent = groupAverage.toFixed(2);
-        averageRow.appendChild(groupCell);
-    });
+            const overallHeader = document.createElement('th');
+            overallHeader.textContent = "Promedio General";
+            headerRow.appendChild(overallHeader);
 
-    tbody.appendChild(averageRow);
-};
+            groupArray.forEach(group => {
+                const groupHeader = document.createElement('th');
+                groupHeader.textContent = group;
+                headerRow.appendChild(groupHeader);
+            });
+
+            thead.appendChild(headerRow);
+
+            // Crear filas para estudiantes
+            studentGrades.forEach(student => {
+                const row = document.createElement('tr');
+
+                // Columna: Nombre del estudiante
+                const nameCell = document.createElement('td');
+                const nameLink = document.createElement('a');
+                nameLink.textContent = student.studentName;
+                nameLink.href = "#"; // Evitar comportamiento predeterminado
+                nameLink.addEventListener('click', (e) => {
+                    e.preventDefault(); // Evitar que el enlace navegue directamente
+                    redirectToStudentDashboard({{ course_id }}, student.studentId); // Llama a la función con los parámetros correspondientes
+                    console.log("Redirigiendo al dashboard del estudiante", student.studentId);
+                });
+                nameCell.appendChild(nameLink);
+                row.appendChild(nameCell);
+
+                // Columna: Promedio general
+                const overallCell = document.createElement('td');
+                overallCell.textContent = calculateOverallAverage(student.averagesByGroup, groupArray).toFixed(2);
+                overallCell.classList.add(getGradeClass(overallCell.textContent, lowRange, highRange, highLowRange, upperRange));
+                row.appendChild(overallCell);
+
+                // Columnas: Promedios por grupo
+                groupArray.forEach(group => {
+                    const groupCell = document.createElement('td');
+                    const groupAverage = student.averagesByGroup[group];
+                    if (groupAverage !== undefined) {
+                        groupCell.textContent = groupAverage.toFixed(2);
+                        groupCell.classList.add(getGradeClass(groupAverage, lowRange, highRange, highLowRange, upperRange));
+                    } else {
+                        groupCell.textContent = "-";
+                    }
+                    row.appendChild(groupCell);
+                });
+
+                tbody.appendChild(row);
+            });
+
+            // Añadir fila para el promedio general del curso
+            const averageRow = document.createElement('tr');
+            averageRow.classList.add('course-average-row');
+
+            const averageNameCell = document.createElement('td');
+            averageNameCell.textContent = 'Promedio del Curso';
+            averageRow.appendChild(averageNameCell);
+
+            const overallAverageCell = document.createElement('td');
+            overallAverageCell.textContent = calculateCourseOverallAverage(studentGrades).toFixed(2);
+            averageRow.appendChild(overallAverageCell);
+
+            groupArray.forEach(group => {
+                const groupCell = document.createElement('td');
+                const groupAverage = calculateGroupAverage(studentGrades, group);
+                groupCell.textContent = groupAverage.toFixed(2);
+                averageRow.appendChild(groupCell);
+            });
+
+            tbody.appendChild(averageRow);
+
+            console.log("Tabla actualizada correctamente.");
+        };
+
 
 // Función para calcular el promedio general por estudiante
 const calculateOverallAverage = (averagesByGroup, groupArray) => {
@@ -756,6 +770,20 @@ document.querySelector('.apply-button').addEventListener('click', () => {
             const highLowRange = parseFloat(document.getElementById('highLowRange').value);
             const upperRange = parseFloat(document.getElementById('upperRange').value);
 
+            // Validar que los rangos sean consecutivos
+            if (highRange + 1 !== highLowRange) {
+                alert("Los rangos no son consecutivos. Asegúrate de que el valor más alto del rango bajo sea seguido por el valor más bajo del rango alto.");
+                return; // Detener si los rangos no son válidos
+            }
+
+            console.log("Actualizando el gráfico de rango con los valores:", {
+                lowRange,
+                highRange,
+                highLowRange,
+                upperRange,
+            });
+
+            // Filtrar y calcular la cantidad de estudiantes por rango
             const labels = scores.map(task => task.nombre_tarea);
             const lowCounts = scores.map(task =>
                 task.calificaciones.filter(student => student.weightedScore >= lowRange && student.weightedScore <= highRange).length
@@ -765,58 +793,62 @@ document.querySelector('.apply-button').addEventListener('click', () => {
             );
 
             if (rangeChart) rangeChart.destroy();
-            rangeChart = new Chart(ctx, {
-            type: 'bar',
-            data: {
-                labels: labels,
-                datasets: [
-                    {
-                        label: 'Calificación Baja',
-                        data: lowCounts,
-                        backgroundColor: 'rgba(255, 99, 132, 0.2)',
-                        borderColor: 'rgba(255, 99, 132, 1)',
-                        borderWidth: 1,
-                    },
-                    {
-                        label: 'Calificación Alta',
-                        data: highCounts,
-                        backgroundColor: 'rgba(75, 192, 192, 0.2)',
-                        borderColor: 'rgba(75, 192, 192, 1)',
-                        borderWidth: 1,
-                    },
-                ],
-            },
-            options: {
-                responsive: true,
-                scales: {
-                    x: {
-                        title: {
-                            display: true,
-                            text: 'Actividades' // Título del eje X
-                        }
-                    },
-                    y: {
-                        beginAtZero: true,
-                        max: estudiantes_total + 4,
-                        title: {
-                            display: true,
-                            text: 'Cantidad de Estudiantes' // Título del eje Y
-                        }
-                    }
-                },
-                plugins: {
-                    legend: {
-                        display: true,
-                        position: 'top'
-                    },
-                    tooltip: {
-                        enabled: true
-                    }
-                }
-            },
-        });
 
+            // Crear gráfico de barras
+            rangeChart = new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: labels,
+                    datasets: [
+                        {
+                            label: 'Calificación Baja',
+                            data: lowCounts,
+                            backgroundColor: 'rgba(255, 99, 132, 0.2)',
+                            borderColor: 'rgba(255, 99, 132, 1)',
+                            borderWidth: 1,
+                        },
+                        {
+                            label: 'Calificación Alta',
+                            data: highCounts,
+                            backgroundColor: 'rgba(75, 192, 192, 0.2)',
+                            borderColor: 'rgba(75, 192, 192, 1)',
+                            borderWidth: 1,
+                        },
+                    ],
+                },
+                options: {
+                    responsive: true,
+                    scales: {
+                        x: {
+                            title: {
+                                display: true,
+                                text: 'Actividades', // Título del eje X
+                            },
+                        },
+                        y: {
+                            beginAtZero: true,
+                            max: estudiantes_total + 4,
+                            title: {
+                                display: true,
+                                text: 'Cantidad de Estudiantes', // Título del eje Y
+                            },
+                        },
+                    },
+                    plugins: {
+                        legend: {
+                            display: true,
+                            position: 'top',
+                        },
+                        tooltip: {
+                            enabled: true,
+                        },
+                    },
+                },
+            });
+
+            console.log("Gráfico de rango actualizado correctamente.");
         };
+
 
         const updateRangeChart = () => {
             console.log("Actualizando gráfico de rango...");
