@@ -15,8 +15,35 @@
             border-bottom: 1px solid #ddd;
             box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
             padding: 1rem;
-            text-align: left;
             background: #fff;
+            display: flex;
+            flex-direction: row;
+            flex-wrap: wrap;
+        }
+        .head-title{
+            display: flex;
+            flex-direction: column;
+            align-items: stretch;
+            width: 90%;
+            margin-right: 10px;
+        }
+        .atras{
+            padding: 5px 10px;
+            padding-bottom: 10px;
+            font-size: 20px;
+            font-weight: 900;
+            color: #ffffff;
+            background-color: #333;
+            border: none;
+            border-radius: 20px;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+            align-self: center;
+        }
+
+        .atras :hover{
+            width: 8%;
+            background-color: #888;
         }
         header h3{
             font-size: 40px;
@@ -91,7 +118,7 @@
             border-radius: 4px;
         }
         
-        button {
+        .apply-button {
             background-color: #007bff;
             color: white;
             padding: 10px 15px;
@@ -105,7 +132,7 @@
             margin-top: 5px;
         }
 
-        button:hover {
+        .apply-button:hover {
             background-color: #0056b3;
         }
         details {
@@ -283,8 +310,11 @@
             gap: 10px;
         }
         @media (max-width: 520px) {
-            button{
+            .apply-button{
                 width: 70%;
+            }
+            .atras :hover{
+            width: 8%;
             }
         }
 
@@ -293,12 +323,16 @@
 </head>
 <body>
     <header>
-        <h1>{{name}}</h1>
-        <h3>{{ taskName }}</h3>
+        <button class="atras" onclick=" ">←</button>
+        
+        <div class="head-title">
+            <h1>{{name}}</h1>
+            <h3>{{ taskName }}</h3>
+        </div>
     </header>
     <main>
         <div class="menu-container">
-            <label for="viewSelect">Estadísticas de la actividad:</label>
+            <label for="viewSelect">Estadísticas de la Actividad</label>
             <select id="viewSelect" onchange="handleViewChange()">
                 <option value="general">General</option>
                 <option value="submitted">Entregados</option>
@@ -335,7 +369,7 @@
                                     <input type="number" id="upperRange" min="0" max="100" value="100">
                                 </div>
                             </div>
-                            <button class="apply-button" onclick="updateRangeChartAndLists()">Aplicar</button>
+                            <button class="apply-button" onclick="updateRangeChartAndLists()">Mostrar</button>
                         </div>
                     </div>
                     <div class="note-container">
@@ -428,7 +462,7 @@
                         <form id="reminderForm" class="reminder-form">
                             <label for="customMessage">Mensaje:</label>
                             <textarea id="customMessage" rows="4" cols="50" placeholder="Escribe un mensaje personalizado..."></textarea>
-                            <button type="submit" onclick="handleSaveReminder(event)">Guardar</button>
+                            <button class="apply-button" type="submit" onclick="handleSaveReminder(event)">Guardar</button>
                         </form>
                     </div>
                     

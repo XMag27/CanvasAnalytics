@@ -17,6 +17,27 @@
             padding: 1rem;
             text-align: left;
             background: #fff;
+            display: flex;
+            flex-direction: row;
+            flex-wrap: wrap;
+        }
+        button{
+            padding: 5px 10px;
+            padding-bottom: 10px;
+            font-size: 20px;
+            font-weight: 900;
+            color: #ffffff;
+            background-color: #333;
+            border: none;
+            border-radius: 20px;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+            align-self: center;
+        }
+
+        button :hover{
+            width: 8%;
+            background-color: #888;
         }
         header h1{
             font-size: 40px;
@@ -99,18 +120,21 @@ a:hover {
 </head>
 <body>
     <header>
+        <button class="atras" onclick=" ">←</button>
         <h1>Historial de {{ student_name_data['userName'] }}</h1>
     </header>
     <main>
+        <div class="note-container">
+            <div class="note-box">
+                <strong>Nota:</strong><br>
+                * Todas las calificaciones están ponderadas sobre 100. <br>
+                * Los colores en este gráfico no representan ningún dato.
+            </div>
+        </div>
         <div class="container">
             <h2>Calificaciones por Actividad</h2>
             <canvas id="gradesChart"></canvas>
-            <div class="note-container">
-                <div class="note-box">
-                    <strong>Nota:</strong> Todas las calificaciones están ponderadas sobre 100. <br>
-                    <strong>Nota:</strong> Los colores en este gráfico no representan ningún dato.
-                </div>
-            </div>
+            
         </div>
         <div class="activity-list">
             <h2>Actividades por Categoría</h2>
