@@ -120,7 +120,7 @@ a:hover {
 </head>
 <body>
     <header>
-        <button class="atras" onclick=" ">←</button>
+        <button id="atras" onclick="">←</button>
         <h1>Historial de {{ student_name_data['userName'] }}</h1>
     </header>
     <main>
@@ -144,6 +144,13 @@ a:hover {
         </div>
     </main>
     <script>
+        document.getElementById("atras").addEventListener("click", () => {
+        if (window.history.length > 1) {
+            window.history.back(); // Navega a la página anterior
+        } else {
+            window.location.href = "/"; // Si no hay página anterior, redirige a la página principal
+        }
+    });
         // Datos pasados desde Flask
         const gradesData = {{ grades_data | tojson }};
         const studentName = "{{ student_name_data['userName'] }}";

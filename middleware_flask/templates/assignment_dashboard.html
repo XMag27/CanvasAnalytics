@@ -323,7 +323,7 @@
 </head>
 <body>
     <header>
-        <button class="atras" onclick=" ">←</button>
+        <button class="atras" id="atras">←</button>
         
         <div class="head-title">
             <h1>{{name}}</h1>
@@ -485,6 +485,13 @@
         
     </main>
     <script>
+        document.getElementById("atras").addEventListener("click", () => {
+        if (window.history.length > 1) {
+            window.history.back(); // Navega a la página anterior
+        } else {
+            window.location.href = "/"; // Si no hay página anterior, redirige a la página principal
+        }
+    });
         console.log("Datos de histogramData:", {{ histogram_data | tojson }});
         console.log("Datos de submissionSummary:", {{ submission_summary | tojson }});
         console.log("Datos de analyticsData:", {{ grades_data | tojson }});
