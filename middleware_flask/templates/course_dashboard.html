@@ -12,47 +12,26 @@
             background-color: #fff;
         }
         .low-score {
-            background-color: rgba(255, 99, 132, 0.2);
-            color: rgba(255, 99, 132, 1);
-        }
+    background-color: rgba(255, 99, 132, 0.2);
+    color: rgba(255, 99, 132, 1);
+}
 
-        .medium-score {
-            background-color: rgba(255, 205, 86, 0.2);
-            color: rgba(255, 205, 86, 1);
-        }
+.medium-score {
+    background-color: rgba(255, 205, 86, 0.2);
+    color: rgba(255, 205, 86, 1);
+}
 
-        .high-score {
-            background-color: rgba(75, 192, 192, 0.2);
-            color: rgba(75, 192, 192, 1);
-        }
+.high-score {
+    background-color: rgba(75, 192, 192, 0.2);
+    color: rgba(75, 192, 192, 1);
+}
 
         header {
             border-bottom: 1px solid #ddd;
             box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
             padding: 1rem;
-            text-align: left;
+            text-align: center;
             background: #fff;
-            display: flex;
-            flex-direction: row;
-            flex-wrap: wrap;
-        }
-        .atras{
-            padding: 5px 10px;
-            padding-bottom: 10px;
-            font-size: 20px;
-            font-weight: 900;
-            color: #ffffff;
-            background-color: #333;
-            border: none;
-            border-radius: 20px;
-            cursor: pointer;
-            transition: background-color 0.3s ease;
-            align-self: center;
-        }
-
-        .atras :hover{
-            width: 8%;
-            background-color: #888;
         }
         header h1{
             font-size: 40px;
@@ -149,7 +128,7 @@
             border-radius: 4px;
         }
         
-        .apply-button {
+        button {
             background-color: #007bff;
             color: white;
             padding: 10px 15px;
@@ -163,7 +142,7 @@
             margin-top: 5px;
         }
         
-        .apply-button:hover {
+        button:hover {
             background-color: #0056b3;
         }
         details {
@@ -300,7 +279,7 @@
             text-decoration: underline; /* Opcional: Subraya el texto al pasar el mouse */
         }
         @media (max-width: 520px) {
-            .apply-button{
+            button{
                 width: 70%;
             }
         }
@@ -363,12 +342,11 @@
 </head>
 <body>
     <header>
-        <button class="atras" onclick=" ">←</button>
         <h1>{{ name }}</h1>
     </header>
     <main>
         <div class="menu-container">
-            <label for="viewSelect">Progreso del Curso</label>
+            <label for="viewSelect">Menú Progreso del Curso:</label>
             <select id="viewSelect" onchange="handleViewChange()">
                 <option value="averages">Promedio del Curso</option>
                 <option value="range">Rango de Calificaciones</option>
@@ -430,7 +408,7 @@
                         </div>
                     </div>
                 </div>
-                <button class="apply-button" onclick="updateRangeChartAndLists()">Mostrar</button>
+                <button class="apply-button" onclick="updateRangeChartAndLists()">Aplicar</button>
             </div>
                 
            <h2>Cantidad de estudiantes con el rango de calificaciones asignados</h2>
@@ -670,7 +648,17 @@ const renderAssignmentGroups = (taskList) => {
     // Iterar sobre las tareas para mostrar sus estadísticas
     tasks.forEach(task => {
         const stats = processedData.find(data => data.id === task.id);
-
+        console.log("Estadísticas para la tarea", task.nombre, ":", stats);
+        //validamos que los valores no sean NAN o Infinity
+        if (stats.promedio === "NaN" || stats.promedio === "Infinity") {
+            stats.promedio = 0;
+        }
+        if (stats.notaAlta === "NaN" || stats.notaAlta === "Infinity" || stats.notaAlta === "-Infinity") {
+            stats.notaAlta = 0;
+        }
+        if (stats.notaBaja === "NaN" || stats.notaBaja === "Infinity" || stats.notaBaja === "-Infinity") {
+            stats.notaBaja = 0;
+        }
         if (stats) {
             const row = document.createElement("tr");
             row.innerHTML = `
@@ -682,6 +670,7 @@ const renderAssignmentGroups = (taskList) => {
             tableBody.appendChild(row);
         }
     });
+
 };
 function redirectToStudentDashboard(courseId, studentId) {
         // Construye la URL con los parámetros course_id y student_id
