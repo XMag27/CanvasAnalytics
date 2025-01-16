@@ -367,7 +367,7 @@
     </header>
     <main>
         <div class="menu-container">
-            <label for="viewSelect">Menú Progreso del Curso:</label>
+            <label for="viewSelect">Progreso del Curso:</label>
             <select id="viewSelect" onchange="handleViewChange()">
                 <option value="averages">Promedio del Curso</option>
                 <option value="range">Rango de Calificaciones</option>
@@ -811,7 +811,7 @@ document.querySelector('.apply-button').addEventListener('click', () => {
 
             // Validar que los rangos sean consecutivos
             if (highRange + 1 !== highLowRange) {
-                alert("Los rangos no son consecutivos. Asegúrate de que el valor más alto del rango bajo sea seguido por el valor más bajo del rango alto.");
+                alert("Los rangos no son consecutivos.");
                 return; // Detener si los rangos no son válidos
             }
 
