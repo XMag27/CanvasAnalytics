@@ -156,7 +156,7 @@
                         console.log("submissionSummary es un array. Buscando por assignmentId:", task.assignmentId);
                         const taskSummary = submissionSummary.find(summary => summary.assignmentId === task.assignmentId);
                         if (taskSummary) {
-                            completionPercentage = taskSummary.completionPercentage;
+                            completionPercentage = Math.round(taskSummary.completionPercentage);
                             console.log(`Encontrado: ${JSON.stringify(taskSummary)}`);
                         } else {
                             console.warn(`No se encontró una entrada para assignmentId: ${task.assignmentId}`);

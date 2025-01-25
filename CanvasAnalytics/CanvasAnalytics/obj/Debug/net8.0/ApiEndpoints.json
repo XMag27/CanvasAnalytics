@@ -302,6 +302,27 @@
   },
   {
     "ContainingType": "CoursesController",
+    "Method": "GetSubmissionSummary2",
+    "RelativePath": "api/Courses/{courseId}/tasks/{taskId}/submission-summary-2",
+    "HttpMethod": "GET",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "courseId",
+        "Type": "System.Int32",
+        "IsRequired": true
+      },
+      {
+        "Name": "taskId",
+        "Type": "System.Int32",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "CoursesController",
     "Method": "SendMessage",
     "RelativePath": "api/Courses/send-message",
     "HttpMethod": "POST",

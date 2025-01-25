@@ -769,34 +769,36 @@
 
     // Iterar sobre cada estudiante y enviar el mensaje
     for (const student of NotSubmitted) {
-        console.log(`Preparando mensaje para el estudiante: ${student.name}, ID: ${student.id}`);
+    console.log(`Preparando mensaje para el estudiante: ${student.name}, ID: ${student.id}`);
 
-        const messagePayload = {
-            userId: student.id,
-            subject: "Recordatorio: Tarea pendiente",
-            body: customMessage || `Hola ${student.name}, recuerda completar la tarea antes del ${endDate}.`,
-        };
+    const messagePayload = {
+        userId: student.id,
+        subject: "Recordatorio: Tarea pendiente",
+        body: customMessage || `Hola ${student.name}, recuerda completar la tarea antes del ${endDate}.`,
+    };
 
-        console.log("Payload del mensaje:", messagePayload);
+    console.log("Payload del mensaje:", messagePayload);
 
-        try {
-            const response = await fetch('https://localhost:7138/api/Courses/send-message', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify(messagePayload),
-            });
+    try {
+        // Cambia la URL para apuntar al endpoint Flask
+        const response = await fetch('https://valued-swan-apparently.ngrok-free.app/send_message', { 
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify(messagePayload),
+        });
 
-            if (response.ok) {
-                console.log(`Mensaje enviado correctamente a ${student.name} (ID: ${student.id})`);
-            } else {
-                console.error(`Error al enviar mensaje a ${student.name} (ID: ${student.id}):`, await response.json());
-            }
-        } catch (error) {
-            console.error(`Error de red al enviar mensaje a ${student.name} (ID: ${student.id}):`, error);
+        if (response.ok) {
+            console.log(`Mensaje enviado correctamente a ${student.name} (ID: ${student.id})`);
+        } else {
+            console.error(`Error al enviar mensaje a ${student.name} (ID: ${student.id}):`, await response.json());
         }
+    } catch (error) {
+        console.error(`Error de red al enviar mensaje a ${student.name} (ID: ${student.id}):`, error);
     }
+}
+
 
     alert('Recordatorio guardado y mensajes enviados correctamente.');
 }

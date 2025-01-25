@@ -110,7 +110,7 @@ namespace CanvasAnalytics.Services
 
         public async Task<List<Student>> GetStudentsAsync(int courseId)
         {
-            var response = await _httpClient.GetAsync($"courses/{courseId}/users?enrollment_type[]=student");
+            var response = await _httpClient.GetAsync($"courses/{courseId}/students");
             response.EnsureSuccessStatusCode();
 
             var jsonResponse = await response.Content.ReadAsStringAsync();
@@ -131,7 +131,7 @@ namespace CanvasAnalytics.Services
 
                 // Obtener la lista de envíos para la tarea
                 Console.WriteLine($"Obteniendo envíos para la tarea {taskId}...");
-                var submissionsResponse = await _httpClient.GetAsync($"courses/{courseId}/assignments/{taskId}/submissions");
+                var submissionsResponse = await _httpClient.GetAsync($"courses/{courseId}/assignments/{taskId}/submissions?per_page=100");
                 submissionsResponse.EnsureSuccessStatusCode();
                 var submissionsJson = await submissionsResponse.Content.ReadAsStringAsync();
                 var submissions = JsonConvert.DeserializeObject<List<Submission>>(submissionsJson);
@@ -140,7 +140,7 @@ namespace CanvasAnalytics.Services
                 // Obtener los IDs de los estudiantes que entregaron la tarea
                 var submittedStudentIds = submissions
                     .Where(submission =>
-                        submission.WorkflowState == "submitted" ||
+                        submission.WorkflowState != "unsubmitted" ||
                         submission.SubmittedAt != null || // Si hay una fecha de envío
                         submission.SubmissionType != null || // Si hay un tipo de envío
                         (submission.Attachments != null && submission.Attachments.Any())) // Si hay archivos adjuntos
@@ -185,7 +185,7 @@ namespace CanvasAnalytics.Services
         public async Task<List<Grade>> GetGradesAsync(int courseId, int taskId)
         {
             // Construir la URL de la solicitud
-            var response = await _httpClient.GetAsync($"courses/{courseId}/assignments/{taskId}/submissions");
+            var response = await _httpClient.GetAsync($"courses/{courseId}/assignments/{taskId}/submissions?per_page=100");
 
             // Asegurarse de que la respuesta sea exitosa
             response.EnsureSuccessStatusCode();
@@ -198,7 +198,7 @@ namespace CanvasAnalytics.Services
         }
         public async Task<List<Submission>> GetSubmissionsAsync(int courseId, int taskId)
         {
-            var url = $"courses/{courseId}/assignments/{taskId}/submissions";
+            var url = $"courses/{courseId}/assignments/{taskId}/submissions?per_page=100";
             Console.WriteLine($"URL de solicitud: {url}"); // Imprime la URL
 
             var response = await _httpClient.GetAsync(url);

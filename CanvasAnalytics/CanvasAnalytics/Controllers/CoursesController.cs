@@ -368,6 +368,77 @@ public class CoursesController : ControllerBase
         }
     }
 
+    [HttpGet("{courseId}/tasks/{taskId}/submission-summary-2")]
+    public async Task<IActionResult> GetSubmissionSummary2(int courseId, int taskId)
+    {
+        try
+        {
+            Console.WriteLine($"Solicitud para curso {courseId}, tarea {taskId}");
+
+            // Obtener todas las entregas
+            var submissions = await _canvasApiService.GetSubmissionsAsync(courseId, taskId);
+
+            // Filtrar entregas válidas y no entregadas según el estado
+            var submittedStudents = submissions.Where(s => s.WorkflowState != "unsubmitted").ToList();
+            var notSubmittedStudents = submissions.Where(s => s.WorkflowState == "unsubmitted").ToList();
+
+            // Calcular conteos
+            var submittedCount = submittedStudents.Count;
+            var notSubmittedCount = notSubmittedStudents.Count;
+
+            // Obtener estudiantes adicionales no entregados de otra fuente
+            var additionalNotSubmitted = await _canvasApiService.GetNotSubmittedStudentsAsync(courseId, taskId);
+
+            // Combinar y eliminar duplicados
+            var additionalNotSubmittedIds = additionalNotSubmitted.Select(s => s.Id).ToHashSet();
+            var submittedIds = submittedStudents.Select(s => s.UserId).ToHashSet();
+            var duplicateIds = submittedIds.Intersect(additionalNotSubmittedIds).ToList();
+
+            // Excluir duplicados de la lista de estudiantes adicionales no entregados
+            var filteredNotSubmittedStudents = additionalNotSubmitted
+                .Where(s => !duplicateIds.Contains(s.Id))
+                .Select(s => new
+                {
+                    s.Id,
+                    s.Name
+                });
+
+            // Calcular porcentaje
+            double completionPercentage = submissions.Any()
+                ? (double)submittedCount / submissions.Count * 100
+                : 0.0;
+
+            // Resumen
+            var summary = new
+            {
+                Submitted = submittedCount,
+                NotSubmitted = filteredNotSubmittedStudents.Count(),
+                CompletionPercentage = completionPercentage, // Porcentaje de entregas cumplidas
+                SubmittedStudents = submittedStudents, // Lista de estudiantes que sí entregaron
+                NotSubmittedStudents = filteredNotSubmittedStudents, // Lista de estudiantes sin duplicados
+                DuplicateIds = duplicateIds // IDs duplicados
+            };
+
+            Console.WriteLine($"Resumen de entregas generado: {JsonConvert.SerializeObject(summary)}");
+            return Ok(summary);
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error en el resumen: {ex.Message}");
+            return StatusCode(500, new
+            {
+                error = "Error al obtener el resumen de entregas",
+                details = ex.Message
+            });
+        }
+    }
+
+
+
+
+
+
+
     [HttpGet("{courseId}/assignments/{taskId}/name")]
     public async Task<IActionResult> GetAssignmentName(int courseId, int taskId)
     {

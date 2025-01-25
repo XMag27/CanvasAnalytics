@@ -1,12 +1,24 @@
 from flask import Flask, request, jsonify, render_template
 import requests
 from concurrent.futures import ThreadPoolExecutor
+from config import DevelopmentConfig, TestingConfig, ProductionConfig
+import os
+
 
 
 app = Flask(__name__)
-API_BASE_URL = "https://localhost:7138"
-canvas_url = "http://canvas.docker"
-LTI_URL = "https://valued-swan-apparently.ngrok-free.app"
+# Determinar el entorno (por defecto, desarrollo)
+env = os.getenv("FLASK_ENV", "development")
+if env == "development":
+    app.config.from_object(DevelopmentConfig)
+elif env == "testing":
+    app.config.from_object(TestingConfig)
+else:
+    app.config.from_object(ProductionConfig)
+
+API_BASE_URL = app.config["API_BASE_URL"]
+canvas_url = app.config["CANVAS_URL"]
+LTI_URL = app.config["LTI_URL"]
 # Endpoint de lanzamiento LTI
 @app.route('/lti/launch', methods=['POST'])
 def lti_launch():
@@ -31,7 +43,7 @@ def lti_launch():
             for task in pending_tasks:
                 assignmentId = task['assignmentId']
                 task_summary_response = requests.get(
-                    f"{API_BASE_URL}/api/Courses/{course_id}/tasks/{assignmentId}/submission-summary", verify=False
+                    f"{API_BASE_URL}/api/Courses/{course_id}/tasks/{assignmentId}/submission-summary-2", verify=False
                 )
                 task = task_summary_response.json() if task_summary_response.status_code == 200 else {}
                 tasks_summary.append(task)
@@ -247,6 +259,29 @@ def course_dashboard():
         name = nombre_curso
     )
 
+@app.route('/send_message', methods=['POST'])
+def send_message():
+    try:
+        # Extraer los datos enviados al intermediario
+        data = request.get_json()
+
+        # Verificar que los datos necesarios estén presentes
+        if not data or 'userId' not in data or 'subject' not in data or 'body' not in data:
+            return jsonify({"error": "Invalid input data"}), 400
+
+        # Enviar la solicitud al endpoint externo
+        external_response = requests.post(
+            "https://localhost:7138/api/Courses/send-message",
+            headers={"Content-Type": "application/json"},
+            json=data,
+            verify=False  # Si estás usando un certificado autofirmado, puedes desactivarlo
+        )
+
+        # Retornar la respuesta del endpoint externo
+        return jsonify(external_response.json()), external_response.status_code
+
+    except Exception as e:
+        return jsonify({"error": "Failed to send message", "details": str(e)}), 500
 
 
 # Inicia la aplicación
